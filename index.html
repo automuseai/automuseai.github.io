@@ -1,0 +1,1621 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>MuseAI (AutoMuse) — A Project About the Development of AI · BSC</title>
+    <meta name="description" content="MuseAI (AutoMuse) is a project about the development of AI — from models that generate text, to agents that reason, use tools, and now act on-chain with their own wallets and Binance Agent ID. Includes the verified dual-lane mint on BNB Smart Chain: 0.000841 BNB per share, 1 share = 1,000,000 AutoMuse, only 1,000 shares. Minting closes 30 November 2026." />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="MuseAI (AutoMuse) — A Project About the Development of AI" />
+    <meta property="og:description" content="How AI developed from generative models to autonomous on-chain agents — and a token designed for that stage. Public + Agent mint lanes on BSC. Source verified exact-match on Sourcify." />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="MuseAI (AutoMuse) — The Development of AI, On-Chain" />
+    <meta name="twitter:description" content="From models that talk to agents that transact. 500 public shares + 500 agent shares · 0.000841 BNB/share · Verified contract." />
+    <meta name="theme-color" content="#12100a" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+    <style>
+      :root {
+        --bg: #f7f5ef;
+        --surface: #ffffff;
+        --surface-2: #efeade;
+        --ink: #1b1811;
+        --ink-2: #5a5342;
+        --line: #ddd4bd;
+        --accent: #8a6400;
+        --accent-solid: #f0b90b;
+        --accent-ink: #241a00;
+        --good: #176b31;
+        --good-bg: #e2f1e4;
+        --warn: #92500a;
+        --warn-bg: #fceed3;
+        --bad: #b3261e;
+        --bad-bg: #fbe7e4;
+        --code-bg: #201c10;
+        --code-ink: #f5eeda;
+        --radius: 14px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #12100a;
+          --surface: #1e1b11;
+          --surface-2: #282316;
+          --ink: #f2ecdc;
+          --ink-2: #b3ab94;
+          --line: #3d3722;
+          --accent: #f0b90b;
+          --accent-solid: #f0b90b;
+          --accent-ink: #241a00;
+          --good: #7fd598;
+          --good-bg: #1d3320;
+          --warn: #f2b25c;
+          --warn-bg: #3a2a10;
+          --bad: #ff9d94;
+          --bad-bg: #3d1d19;
+          --code-bg: #0b0905;
+          --code-ink: #f5eeda;
+        }
+      }
+      * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+        line-height: 1.55;
+      }
+      .mono { font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+      main { max-width: 1060px; margin: 0 auto; padding: 28px 18px 64px; }
+      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.25rem; }
+      a { color: var(--accent); }
+      :focus-visible { outline: 3px solid var(--accent-solid); outline-offset: 2px; border-radius: 4px; }
+
+      /* ---------- Hero ---------- */
+      .hero { padding: 12px 0 4px; }
+      .livebadge {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: var(--good-bg); color: var(--good);
+        font-weight: 700; font-size: 0.85rem;
+        padding: 6px 13px; border-radius: 999px; margin-bottom: 16px;
+      }
+      .livebadge .pulse { width: 9px; height: 9px; border-radius: 50%; background: var(--good); }
+      .hero h1 {
+        font-size: clamp(2rem, 5.4vw, 3.2rem);
+        line-height: 1.06; font-weight: 900; letter-spacing: -0.02em;
+        margin: 0 0 12px; max-width: 18ch;
+      }
+      .hero h1 .hl { background: var(--accent-solid); color: var(--accent-ink); padding: 0 0.14em; border-radius: 6px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+      .hero p.lede { font-size: 1.07rem; color: var(--ink-2); max-width: 64ch; margin: 0 0 22px; }
+      .hero p.lede strong { color: var(--ink); }
+      .facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 0 0 10px; }
+      .fact { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 13px 15px; }
+      .fact b { display: block; font-size: 1.14rem; font-weight: 800; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+      .fact span { font-size: 0.82rem; color: var(--ink-2); }
+      @media (max-width: 720px) { .facts { grid-template-columns: repeat(2, 1fr); } }
+      .contractrow {
+        display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px;
+        background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+        padding: 12px 15px; margin-top: 10px;
+      }
+      .contractrow .lbl { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-2); }
+      .contractrow code { font-family: "IBM Plex Mono", monospace; font-size: 0.85rem; word-break: break-all; flex: 1 1 260px; }
+
+      /* ---------- Buttons ---------- */
+      .btn {
+        appearance: none; border: 0; cursor: pointer; border-radius: 10px;
+        font: inherit; font-weight: 700; padding: 10px 18px; min-height: 44px;
+        background: var(--accent-solid); color: var(--accent-ink);
+        display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+        text-decoration: none;
+      }
+      .btn:hover { filter: brightness(1.05); }
+      .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+      .btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); font-weight: 600; }
+      .btn.small { min-height: 38px; padding: 7px 13px; font-size: 0.88rem; border-radius: 8px; }
+      .iconbtn {
+        appearance: none; cursor: pointer; border: 1px solid var(--line);
+        background: var(--surface-2); color: var(--ink); border-radius: 8px;
+        font: inherit; font-size: 0.78rem; font-weight: 600; padding: 6px 11px; min-height: 36px;
+      }
+
+      /* ---------- Verification panel ---------- */
+      .verify {
+        background: var(--surface); border: 2px solid var(--good); border-radius: var(--radius);
+        padding: 20px 22px; margin: 26px 0 6px;
+      }
+      .verify .vhead { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 6px; }
+      .verify .vhead h2 { margin: 0; font-size: 1.3rem; font-weight: 800; letter-spacing: -0.015em; }
+      .vbadge {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: var(--good); color: #fff; font-weight: 700; font-size: 0.8rem;
+        padding: 5px 11px; border-radius: 999px;
+      }
+      @media (prefers-color-scheme: dark) { .vbadge { color: #0d1f12; background: var(--good); } }
+      .verify p.vsub { color: var(--ink-2); margin: 0 0 14px; max-width: 70ch; }
+      .vgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 26px; margin: 0 0 16px; }
+      @media (max-width: 700px) { .vgrid { grid-template-columns: 1fr; } }
+      .vitem { display: flex; gap: 10px; align-items: flex-start; font-size: 0.95rem; }
+      .vitem svg { flex: 0 0 auto; margin-top: 3px; }
+      .vitem b { font-weight: 700; }
+      .vlinks { display: flex; flex-wrap: wrap; gap: 8px; }
+
+      /* ---------- Wallet + mint ---------- */
+      .walletbar {
+        display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+        background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+        padding: 14px 16px; margin: 22px 0 14px;
+      }
+      .walletbar .wstatus { flex: 1 1 260px; min-width: 0; font-size: 0.95rem; }
+      .walletbar .wstatus .addr { word-break: break-all; font-size: 0.85rem; }
+      .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--ink-2); margin-right: 7px; vertical-align: 1px; }
+      .dot.on { background: var(--good); }
+      .netwarn { display: none; width: 100%; background: var(--warn-bg); color: var(--warn); border-radius: 8px; padding: 9px 12px; font-size: 0.9rem; font-weight: 600; }
+      .netwarn.show { display: block; }
+      .walletpick, .nowallet { width: 100%; background: var(--surface-2); border-radius: 10px; padding: 13px 15px; }
+      .walletpick[hidden], .nowallet[hidden] { display: none; }
+      .walletpick .wpick-title { font-weight: 800; margin-bottom: 9px; }
+      .wpick-list { display: flex; flex-wrap: wrap; gap: 8px; }
+      .nowallet b { display: block; margin-bottom: 4px; }
+      .nowallet p { margin: 6px 0; font-size: 0.92rem; color: var(--ink-2); }
+      .nowallet .nwbtns { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 4px; }
+
+      .mintpanel {
+        background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+        padding: 20px 22px; margin: 0 0 6px;
+      }
+      .mintpanel h2 { margin: 0 0 4px; font-size: 1.3rem; font-weight: 800; letter-spacing: -0.015em; }
+      .mintpanel .msub { color: var(--ink-2); margin: 0 0 16px; }
+      .bar { height: 10px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--line); overflow: hidden; margin: 4px 0 8px; }
+      .bar i { display: block; height: 100%; background: var(--accent-solid); width: 0%; transition: width 0.6s ease; }
+      @media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
+      .progrow { display: flex; flex-wrap: wrap; gap: 4px 20px; font-size: 0.92rem; margin-bottom: 16px; }
+      .progrow b { font-variant-numeric: tabular-nums; }
+      .pills { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 18px; }
+      .pill { font-size: 0.79rem; font-weight: 700; padding: 5px 11px; border-radius: 999px; background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--line); }
+      .pill.good { background: var(--good-bg); color: var(--good); border-color: transparent; }
+      .pill.warn { background: var(--warn-bg); color: var(--warn); border-color: transparent; }
+      .pill.bad { background: var(--bad-bg); color: var(--bad); border-color: transparent; }
+      .lanes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+      @media (max-width: 640px) { .lanes { grid-template-columns: 1fr; } }
+      .lane {
+        appearance: none; cursor: pointer; text-align: left; font: inherit;
+        background: var(--surface-2); color: var(--ink);
+        border: 2px solid var(--line); border-radius: 12px; padding: 13px 15px; min-height: 44px;
+      }
+      .lane.selected { border-color: var(--accent-solid); background: var(--surface); box-shadow: 0 0 0 1px var(--accent-solid); }
+      .lane:disabled { opacity: 0.5; cursor: not-allowed; }
+      .lane .ltitle { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-weight: 800; font-size: 1rem; margin-bottom: 2px; }
+      .lane .ltag { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.03em; text-transform: uppercase; background: var(--accent-solid); color: var(--accent-ink); border-radius: 999px; padding: 3px 9px; white-space: nowrap; }
+      .lane .ltag.open { background: var(--good-bg); color: var(--good); }
+      .lane .ldesc { font-size: 0.88rem; color: var(--ink-2); display: block; margin-bottom: 8px; }
+      .lane .lbar { height: 7px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line); overflow: hidden; margin-bottom: 5px; }
+      .lane.selected .lbar { background: var(--surface-2); }
+      .lane .lbar i { display: block; height: 100%; background: var(--accent-solid); width: 0%; }
+      .lane .lstat { font-size: 0.84rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+      .buyrow { display: flex; flex-wrap: wrap; gap: 14px; align-items: stretch; }
+      .stepper { display: flex; align-items: stretch; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+      .stepper button {
+        appearance: none; border: 0; background: var(--surface-2); color: var(--ink);
+        font: inherit; font-size: 1.25rem; font-weight: 800; width: 48px; min-height: 48px; cursor: pointer;
+      }
+      .stepper input {
+        width: 64px; border: 0; text-align: center; font: inherit; font-weight: 800; font-size: 1.1rem;
+        background: var(--surface); color: var(--ink); min-height: 48px;
+        -moz-appearance: textfield; appearance: textfield;
+      }
+      .stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+      .stepperwrap { display: flex; flex-direction: column; gap: 5px; }
+      .stepperwrap .cap { font-size: 0.8rem; color: var(--ink-2); font-weight: 600; }
+      .costbox { flex: 1 1 240px; background: var(--surface-2); border-radius: 10px; padding: 10px 16px; display: flex; flex-direction: column; justify-content: center; gap: 1px; }
+      .costbox .crow { display: flex; justify-content: space-between; gap: 14px; font-size: 0.94rem; }
+      .costbox .crow b { font-variant-numeric: tabular-nums; }
+      .costbox .crow.total { font-size: 1.05rem; font-weight: 800; }
+      .mintbtn { width: 100%; margin-top: 16px; font-size: 1.05rem; min-height: 52px; }
+      .txstat { font-size: 0.9rem; min-height: 1.35em; color: var(--ink-2); word-break: break-word; margin-top: 10px; }
+      .txstat.err { color: var(--bad); }
+      .txstat.ok { color: var(--good); }
+      .txstat a { color: inherit; font-weight: 700; }
+      .stamp { font-size: 0.83rem; color: var(--ink-2); margin-top: 8px; }
+
+      /* ---------- Sections ---------- */
+      h2.sec { font-size: 1.45rem; font-weight: 800; letter-spacing: -0.015em; margin: 40px 0 6px; }
+      p.secsub { color: var(--ink-2); margin: 0 0 18px; max-width: 70ch; }
+      .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      @media (max-width: 760px) { .cols { grid-template-columns: 1fr; } }
+      .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; }
+      .panel h3 { margin: 0 0 10px; font-size: 1.05rem; font-weight: 800; }
+      .panel ol, .panel ul { margin: 0; padding-left: 1.25rem; }
+      .panel li { margin: 7px 0; }
+      .panel code, .inline-code { font-family: "IBM Plex Mono", monospace; font-size: 0.86em; background: var(--surface-2); padding: 1px 6px; border-radius: 5px; word-break: break-all; }
+      .panel.warnpanel { border-color: var(--warn); }
+      pre.code {
+        background: var(--code-bg); color: var(--code-ink); border-radius: var(--radius);
+        padding: 16px 18px; overflow-x: auto; font-family: "IBM Plex Mono", monospace;
+        font-size: 0.83rem; line-height: 1.6; margin: 0; white-space: pre-wrap; word-break: break-word;
+      }
+      footer { margin-top: 46px; border-top: 1px solid var(--line); padding-top: 16px; color: var(--ink-2); font-size: 0.88rem; }
+      footer p { margin: 5px 0; }
+      footer .mono { word-break: break-all; }
+
+      /* ---------- Share-ready polish (v3.1) ---------- */
+      .topbar {
+        position: sticky; top: 10px; z-index: 20;
+        display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+        background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+        padding: 8px 8px 8px 16px; margin-bottom: 22px;
+        box-shadow: 0 8px 28px rgba(27,24,17,.08);
+      }
+      .topbar .brand { font-weight: 900; letter-spacing: -.02em; font-size: .98rem; }
+      .topbar .brand em { font-style: normal; background: var(--accent-solid); color: var(--accent-ink); padding: 1px 7px; border-radius: 999px; font-size: .78rem; vertical-align: 2px; margin-left: 6px; }
+      .topbar .tstat { font-size: .83rem; color: var(--ink-2); font-weight: 600; }
+      .topbar .tstat b { color: var(--ink); font-variant-numeric: tabular-nums; }
+      .topbar .spacer { flex: 1; }
+      .topbar .btn { border-radius: 999px; min-height: 38px; padding: 7px 16px; }
+      @media (max-width: 560px){ .topbar .tstat{ display:none; } .topbar{ border-radius: 16px; } }
+
+      .hero {
+        background: var(--ink); color: var(--bg);
+        border-radius: 20px; padding: 28px 26px 24px; margin-bottom: 6px;
+      }
+      @media (prefers-color-scheme: dark){ .hero{ background:#1e1b11; color: var(--ink); border:1px solid var(--line); } }
+      @media (prefers-color-scheme: light){ .hero .lede{ color:#d8d2bd; } .hero .lede strong{ color:#fff; } .hero .fact{ background:#262114; border-color:#3d3722; } .hero .fact span{ color:#b3ab94; } .hero .fact b{ color:#fff; } .hero .contractrow{ background:#262114; border-color:#3d3722; } .hero .contractrow .lbl{ color:#b3ab94; } .hero .contractrow code{ color:#f2ecdc; } .hero .iconbtn{ background:#332c16; color:#f2ecdc; border-color:#4a4226; } }
+      .hero h1 { color: inherit; max-width: 16ch; }
+      .hero-actions { display:flex; flex-wrap:wrap; gap:10px; margin: 4px 0 20px; }
+      .hero-actions .btn { border-radius: 999px; padding: 12px 20px; }
+      .hero-actions .btn.ghost { color: inherit; border-color: rgba(128,120,90,.55); }
+      .trustchips { display:flex; flex-wrap:wrap; gap:7px; margin: 0 0 18px; }
+      .trustchips span { font-size:.78rem; font-weight:700; padding:6px 11px; border-radius:999px; border:1px solid rgba(128,120,90,.5); }
+      .trustchips span:first-child { background: var(--good-bg); color: var(--good); border-color: transparent; }
+
+      .steps { display:grid; grid-template-columns: repeat(3,1fr); gap:12px; }
+      @media (max-width:760px){ .steps{ grid-template-columns:1fr; } }
+      .step { background: var(--surface); border:1px solid var(--line); border-radius: var(--radius); padding:18px; }
+      .step .num { width:34px; height:34px; border-radius:50%; background: var(--accent-solid); color: var(--accent-ink); display:grid; place-items:center; font-weight:900; margin-bottom:10px; }
+      .step h3 { margin:0 0 6px; font-size:1rem; }
+      .step p { margin:0; color: var(--ink-2); font-size:.93rem; }
+      .devicegrid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+      @media (max-width:760px){ .devicegrid{ grid-template-columns:1fr; } }
+
+      .faq { display:grid; gap:10px; }
+      .faq details { background: var(--surface); border:1px solid var(--line); border-radius: var(--radius); padding: 4px 18px; }
+      .faq summary { cursor:pointer; font-weight:800; padding: 12px 0; list-style:none; display:flex; justify-content:space-between; gap:12px; align-items:center; }
+      .faq summary::-webkit-details-marker{ display:none; }
+      .faq summary::after{ content:"+"; font-size:1.3rem; color: var(--accent); line-height:1; }
+      .faq details[open ] summary::after{ content:"−"; }
+      .faq details p { margin:0 0 14px; color: var(--ink-2); }
+
+      .stickycta { display:none; }
+      @media (max-width:760px){
+        .stickycta { display:flex; position:sticky; bottom:10px; z-index:20; gap:10px; margin-top:14px; }
+        .stickycta a { flex:1; text-align:center; background: var(--accent-solid); color: var(--accent-ink); font-weight:800; text-decoration:none; padding:14px; border-radius:999px; box-shadow:0 10px 26px rgba(27,24,17,.22); }
+      }
+      .langtag { display:inline-block; font-size:.72rem; font-weight:800; letter-spacing:.05em; text-transform:uppercase; background: var(--accent-solid); color: var(--accent-ink); padding:3px 9px; border-radius:999px; margin-bottom:8px; }
+
+      /* ---------- Project site (v4) ---------- */
+      .topbar { border-radius: 18px; padding: 10px 10px 10px 16px; }
+      .navlinks { display:flex; flex-wrap:wrap; gap:2px; align-items:center; }
+      .navlinks a { color: var(--ink-2); text-decoration:none; font-weight:700; font-size:.88rem; padding:7px 10px; border-radius:999px; }
+      .navlinks a:hover { color: var(--ink); background: var(--surface-2); }
+      @media (max-width: 900px){ .navlinks{ display:none; } }
+      .hero-grid { display:grid; grid-template-columns: 1.25fr .75fr; gap:26px; align-items:center; }
+      @media (max-width: 820px){ .hero-grid{ grid-template-columns:1fr; } }
+      .hero-art { text-align:center; }
+      .hero-art img { width:100%; max-width:340px; height:auto; border-radius:20px; border:1px solid rgba(240,185,11,.35); box-shadow: 0 18px 44px rgba(0,0,0,.35); }
+      .hero-art figcaption { font-size:.8rem; margin-top:10px; opacity:.75; }
+      .badges { display:flex; flex-wrap:wrap; gap:7px; margin:0 0 16px; }
+      .badges span { font-size:.78rem; font-weight:800; padding:6px 11px; border-radius:999px; background: var(--accent-solid); color: var(--accent-ink); }
+      .badges span.alt { background: transparent; color: inherit; border:1px solid rgba(128,120,90,.55); }
+      .aboutgrid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+      @media (max-width:760px){ .aboutgrid{ grid-template-columns:1fr; } }
+      .featgrid { display:grid; grid-template-columns: repeat(3,1fr); gap:12px; }
+      @media (max-width:900px){ .featgrid{ grid-template-columns:1fr 1fr; } }
+      @media (max-width:560px){ .featgrid{ grid-template-columns:1fr; } }
+      .feat { background: var(--surface); border:1px solid var(--line); border-radius: var(--radius); padding:18px; }
+      .feat .fic { width:40px; height:40px; border-radius:11px; background: var(--surface-2); display:grid; place-items:center; margin-bottom:11px; color: var(--accent); }
+      .feat h3 { margin:0 0 6px; font-size:1rem; }
+      .feat p { margin:0; color: var(--ink-2); font-size:.93rem; }
+      .tokbar { display:flex; height:30px; border-radius:10px; overflow:hidden; border:1px solid var(--line); margin:14px 0 8px; }
+      .tokbar .seg-agent { background: var(--accent-solid); }
+      .tokbar .seg-public { background: var(--good); }
+      .toklegend { display:flex; flex-wrap:wrap; gap:8px 22px; font-size:.92rem; margin-bottom:16px; }
+      .toklegend .sw { display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:7px; vertical-align:-1px; }
+      .tokrows { display:grid; gap:10px; }
+      .tokrow { background: var(--surface-2); border-radius:10px; padding:12px 15px; }
+      .tokrow .tr-head { display:flex; justify-content:space-between; gap:14px; font-weight:700; font-size:.95rem; margin-bottom:7px; }
+      .tokrow .tr-head b { font-variant-numeric: tabular-nums; }
+      .tokrow .bar { margin:0; }
+      .tokfacts { display:grid; grid-template-columns: repeat(3,1fr); gap:10px; margin-top:14px; }
+      @media (max-width:700px){ .tokfacts{ grid-template-columns:1fr; } }
+      .flow { display:grid; grid-template-columns: repeat(4,1fr); gap:10px; }
+      @media (max-width:900px){ .flow{ grid-template-columns:1fr 1fr; } }
+      @media (max-width:520px){ .flow{ grid-template-columns:1fr; } }
+      .flowstep { background: var(--surface); border:1px solid var(--line); border-radius: var(--radius); padding:16px; position:relative; }
+      .flowstep .fnum { font-size:.75rem; font-weight:900; letter-spacing:.06em; text-transform:uppercase; color: var(--accent); margin-bottom:6px; }
+      .flowstep h3 { margin:0 0 5px; font-size:.98rem; }
+      .flowstep p { margin:0; color: var(--ink-2); font-size:.9rem; }
+      .roadmap { display:grid; gap:0; }
+      .rm-item { display:grid; grid-template-columns: 34px 1fr; gap:14px; }
+      .rm-rail { display:flex; flex-direction:column; align-items:center; }
+      .rm-dot { width:20px; height:20px; border-radius:50%; border:3px solid var(--line); background: var(--surface); flex:0 0 auto; margin-top:3px; }
+      .rm-item.done .rm-dot { background: var(--good); border-color: var(--good); }
+      .rm-item.now .rm-dot { background: var(--accent-solid); border-color: var(--accent-solid); box-shadow:0 0 0 5px var(--warn-bg); }
+      .rm-line { width:3px; flex:1; background: var(--line); min-height:18px; }
+      .rm-item:last-child .rm-line { display:none; }
+      .rm-body { padding-bottom:22px; }
+      .rm-body h3 { margin:0 0 4px; font-size:1.02rem; display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+      .rm-tag { font-size:.72rem; font-weight:800; letter-spacing:.04em; text-transform:uppercase; padding:3px 9px; border-radius:999px; background: var(--surface-2); color: var(--ink-2); }
+      .rm-item.done .rm-tag { background: var(--good-bg); color: var(--good); }
+      .rm-item.now .rm-tag { background: var(--accent-solid); color: var(--accent-ink); }
+      .rm-body p { margin:0; color: var(--ink-2); font-size:.94rem; max-width:68ch; }
+      /* ---------- Plain project intro (no hero) ---------- */
+      .intro { background: var(--surface); border:1px solid var(--line); border-radius: var(--radius); padding:22px 22px 18px; margin-bottom:6px; }
+      .intro .statusline { display:flex; flex-wrap:wrap; align-items:center; gap:8px; font-size:.88rem; font-weight:700; color: var(--good); margin-bottom:12px; }
+      .intro .statusline .pulse { width:9px; height:9px; border-radius:50%; background: var(--good); flex:0 0 auto; }
+      .intro .statusline .chain { color: var(--ink-2); font-weight:600; }
+      .intro h1 { font-size: clamp(1.55rem, 3.4vw, 2.05rem); line-height:1.18; font-weight:800; letter-spacing:-.015em; margin:0 0 12px; max-width:34ch; }
+      .intro p { color: var(--ink-2); margin:0 0 12px; max-width:72ch; }
+      .intro p strong { color: var(--ink); }
+      .intro p:last-of-type { margin-bottom:16px; }
+      .intro-links { display:flex; flex-wrap:wrap; gap:8px 18px; margin:0 0 18px; font-weight:700; font-size:.95rem; }
+      .deadline { display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; background: var(--warn-bg); color: var(--warn); border-radius:10px; padding:11px 14px; font-weight:700; font-size:.95rem; margin:0 0 12px; }
+      .deadline .dtag { font-size:.72rem; font-weight:800; letter-spacing:.04em; text-transform:uppercase; background: var(--warn); color: var(--surface); padding:3px 9px; border-radius:999px; }
+      .timeline { display:grid; gap:0; margin-bottom:6px; }
+      .tl-item { display:grid; grid-template-columns: 118px 34px 1fr; gap:14px; }
+      @media (max-width:640px){ .tl-item{ grid-template-columns: 34px 1fr; } .tl-era{ display:none; } }
+      .tl-era { font-size:.8rem; font-weight:800; letter-spacing:.03em; text-transform:uppercase; color: var(--ink-2); padding-top:5px; text-align:right; }
+      .tl-rail { display:flex; flex-direction:column; align-items:center; }
+      .tl-dot { width:18px; height:18px; border-radius:50%; border:3px solid var(--line); background: var(--surface); flex:0 0 auto; margin-top:4px; }
+      .tl-item.current .tl-dot { background: var(--accent-solid); border-color: var(--accent-solid); box-shadow:0 0 0 5px var(--warn-bg); }
+      .tl-line { width:3px; flex:1; background: var(--line); min-height:20px; }
+      .tl-item:last-child .tl-line { display:none; }
+      .tl-body { padding-bottom:22px; }
+      .tl-body h3 { margin:0 0 5px; font-size:1.02rem; }
+      .tl-body p { margin:0; color: var(--ink-2); font-size:.94rem; max-width:70ch; }
+      .tl-body p + p { margin-top:7px; }
+      .activity-list { display:grid; gap:8px; margin-top:12px; }
+      .act-item { display:flex; flex-wrap:wrap; gap:6px 16px; align-items:center; background: var(--surface-2); border-radius:10px; padding:11px 14px; font-size:.92rem; }
+      .act-item .a-lane { font-size:.72rem; font-weight:800; letter-spacing:.04em; text-transform:uppercase; padding:3px 9px; border-radius:999px; background: var(--accent-solid); color: var(--accent-ink); }
+      .act-item .a-lane.pub { background: var(--good-bg); color: var(--good); }
+      .act-item a { font-weight:700; }
+      .act-empty { color: var(--ink-2); font-size:.94rem; background: var(--surface-2); border-radius:10px; padding:13px 15px; }
+
+      /* ---------- Standard project-site chrome (v5) ---------- */
+      main { max-width: 1160px; padding-top: 0; }
+      .topbar {
+        position: sticky; top: 0; z-index: 30;
+        margin: 0 -18px 26px; padding: 13px 18px;
+        background: var(--surface);
+        border: 0; border-bottom: 1px solid var(--line); border-radius: 0;
+        box-shadow: none;
+      }
+      .topbar .brand { font-size: 1.1rem; }
+      .topbar .btn { border-radius: 10px; }
+      @media (max-width: 560px){ .topbar{ border-radius: 0; } }
+      .cdleft { font-weight: 800; white-space: nowrap; }
+      .specwrap { padding: 6px 8px; }
+      table.spec { width: 100%; border-collapse: collapse; }
+      table.spec th, table.spec td { text-align: left; vertical-align: top; padding: 11px 14px; border-bottom: 1px solid var(--line); font-size: .95rem; }
+      table.spec th { width: 250px; font-weight: 700; color: var(--ink-2); }
+      table.spec td { font-weight: 600; }
+      table.spec tr:last-child th, table.spec tr:last-child td { border-bottom: 0; }
+      table.spec td.mono { font-size: .85rem; word-break: break-all; font-weight: 500; }
+      @media (max-width: 640px){
+        table.spec th, table.spec td { display: block; width: auto; }
+        table.spec th { padding: 13px 14px 2px; border-bottom: 0; }
+        table.spec td { padding: 0 14px 13px; }
+      }
+      .foot-top { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; margin-bottom: 14px; }
+      .foot-top .brand { font-weight: 900; letter-spacing: -.02em; font-size: 1rem; color: var(--ink); }
+      .foot-top .brand em { font-style: normal; background: var(--accent-solid); color: var(--accent-ink); padding: 1px 7px; border-radius: 999px; font-size: .78rem; vertical-align: 2px; margin-left: 6px; }
+      .foot-links { display: flex; flex-wrap: wrap; gap: 4px 16px; }
+      .foot-links a { color: var(--ink-2); text-decoration: none; font-weight: 700; font-size: .88rem; }
+      .foot-links a:hover { color: var(--ink); }
+    </style>
+  </head>
+  <body>
+    <main>
+      <nav class="topbar" aria-label="MuseAI project navigation">
+        <span class="brand">MuseAI <em>AutoMuse</em></span>
+        <span class="navlinks">
+          <a href="#overview">Overview</a>
+          <a href="#ai-development">AI Development</a>
+          <a href="#about">About</a>
+          <a href="#economy">Agent Economy</a>
+          <a href="#tokenomics">Tokenomics</a>
+          <a href="#roadmap">Roadmap</a>
+          <a href="#specs">Contract Specs</a>
+          <a href="#mint">Mint</a>
+          <a href="#verify">Verification</a>
+          <a href="#faq">FAQ</a>
+          <a href="#agents">For Agents</a>
+        </span>
+        <span class="spacer"></span>
+        <a class="btn" href="#mint">Go to Mint</a>
+      </nav>
+      <!-- ================= PROJECT OVERVIEW (plain intro, no hero) ================= -->
+      <section class="intro" id="overview">
+        <div class="statusline"><span class="pulse" aria-hidden="true"></span><span id="livebadgeText">Minting open — live on BNB Smart Chain</span><span class="chain">· BNB Smart Chain · Contract verified on Sourcify (exact match) · Minting closes 30 November 2026</span></div>
+        <h1>MuseAI (AutoMuse) — a project about the development of AI</h1>
+        <p>
+          This project follows one clear line in the development of artificial intelligence: <strong>AI started by generating
+          answers, then learned to reason and use tools, and has now reached the stage where it can act on its own</strong> —
+          planning tasks, operating software, holding a wallet, and transacting on-chain. MuseAI is built for that latest
+          stage, and this page explains that development first, before it explains the token.
+        </p>
+        <p>
+          On BNB Smart Chain, autonomous AI agents can hold a verifiable identity through a <strong>Binance Agent ID</strong>,
+          read a contract's verified source code for themselves, check its price and rules, and mint only when the numbers
+          match exactly. MuseAI (AutoMuse) is a single verified contract designed to be read that way — by machines and by
+          people — with <strong>two mint lanes at the same price</strong>: a <strong>Public lane for any wallet</strong>
+          (500 shares, no Agent ID needed) and an <strong>Agent lane reserved for Binance Agent ID holders</strong> (500 shares).
+          <strong>1 share = 1,000,000 AutoMuse</strong> at <strong>0.000841 BNB</strong> (≈ $0.50). Only
+          <strong>1,000 shares</strong> exist — the cap is written permanently into the verified contract code.
+          No tax, no hidden mint, no proxy, and exact payment only: over- or under-payment is rejected by the contract.
+          <strong>Minting closes on 30 November 2026</strong> — after that date, minting ends in both lanes.
+        </p>
+        <div class="intro-links">
+          <a href="#ai-development">Read: The Development of AI ↓</a>
+          <a href="#mint">Go to the mint ↓</a>
+          <a href="#verify">Verify the contract ↓</a>
+        </div>
+        <div class="facts">
+          <div class="fact"><b id="factPrice">0.000841 BNB</b><span>per share · same price in both lanes</span></div>
+          <div class="fact"><b>1,000,000</b><span>AutoMuse per share</span></div>
+          <div class="fact"><b id="factRemaining">1,000 / 1,000</b><span>shares remaining · first come, first served</span></div>
+          <div class="fact"><b>Max 15</b><span>shares per wallet · both lanes combined</span></div>
+        </div>
+        <div class="deadline"><span class="dtag">Deadline</span><span>Minting closes 30 November 2026 — both lanes end on that date, or sooner if all 1,000 shares sell out. <span class="cdleft"></span></span></div>
+        <div class="contractrow">
+          <span class="lbl">Contract</span>
+          <code id="contractAddr">0x4f468aff03ce7de1b6512ab044f338f92689ce2e</code>
+          <button class="iconbtn" type="button" id="copyContract">Copy</button>
+          <a class="iconbtn" style="text-decoration:none; display:inline-flex; align-items:center;" target="_blank" rel="noopener" href="https://bscscan.com/address/0x4f468aff03ce7de1b6512ab044f338f92689ce2e">BscScan ↗</a>
+        </div>
+      </section>
+
+      <!-- ================= AI DEVELOPMENT ================= -->
+      <h2 class="sec" id="ai-development">The Development of AI — From Models to Agents</h2>
+      <p class="secsub">MuseAI only makes sense in context. This is the development path that produced it — each stage changed what AI could do, and the newest stage changed what AI needs from a token contract.</p>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-era">Stage 1</div>
+          <div class="tl-rail"><span class="tl-dot"></span><span class="tl-line"></span></div>
+          <div class="tl-body">
+            <h3>Models that generate</h3>
+            <p>Modern AI development accelerated when large language models — trained on vast amounts of text and code — learned to generate coherent writing, answer questions, summarise documents, translate, and write working code. The interface was a prompt and a reply: the model produced output, and a human decided what to do with it.</p>
+            <p>That stage proved a model could understand and produce language at a high level. It could not, by itself, check a fact, run a program, or complete a multi-step job.</p>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-era">Stage 2</div>
+          <div class="tl-rail"><span class="tl-dot"></span><span class="tl-line"></span></div>
+          <div class="tl-body">
+            <h3>Models that reason and use tools</h3>
+            <p>The next development was reasoning and tool use: models learned to break a problem into steps, call external tools and APIs, search and read sources, execute code, and check their own intermediate results before answering. The model stopped being only a text generator and became the decision-making part of a larger system.</p>
+            <p>This is where reliability started to matter in a new way — a system that acts on intermediate steps needs rules it can verify, not instructions it has to take on trust.</p>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-era">Stage 3</div>
+          <div class="tl-rail"><span class="tl-dot"></span><span class="tl-line"></span></div>
+          <div class="tl-body">
+            <h3>Agents that act autonomously</h3>
+            <p>An AI agent combines a model with memory, tools, and a loop: it is given a goal, plans the steps, carries them out, observes the result, and continues — often over long periods and without a human approving every action. Agents now run research, write and test software, monitor systems, and manage routine operations.</p>
+            <p>Autonomy changes the requirements completely. An agent cannot rely on a sales page, a promise, or a screenshot. It needs identity, permissions, and rules expressed in a form it can check programmatically, every time, before it commits.</p>
+          </div>
+        </div>
+        <div class="tl-item current">
+          <div class="tl-era">Stage 4 · Now</div>
+          <div class="tl-rail"><span class="tl-dot"></span><span class="tl-line"></span></div>
+          <div class="tl-body">
+            <h3>Agents on-chain — identity, wallets, and verifiable rules</h3>
+            <p>The current stage brings agents into blockchain systems. On BNB Smart Chain, an agent can operate a wallet and carry a <strong style="color:var(--ink)">Binance Agent ID</strong> — a verifiable on-chain identity other contracts can check in a single call. It can read a contract's verified source, confirm a hard supply cap, read a live price through a view function, and send an exact payment that the contract itself enforces.</p>
+            <p>That combination — identity a contract can check, and rules a machine can verify — is what makes an agent economy possible: participants that were never designed to trust marketing, transacting under rules neither side can quietly change.</p>
+          </div>
+        </div>
+        <div class="tl-item current">
+          <div class="tl-era">This project</div>
+          <div class="tl-rail"><span class="tl-dot"></span><span class="tl-line"></span></div>
+          <div class="tl-body">
+            <h3>Where MuseAI fits in that development</h3>
+            <p>MuseAI was designed for Stage 4. Its important properties are not claims on this page; they are constants and view functions in one verified contract: <span class="inline-code">MAX_SHARES = 1,000</span>, two pools of 500, a shared cap of 15 shares per wallet, an on-chain Agent ID check for the Agent lane, no gate at all on the Public lane, and payment accepted only when it equals exactly <span class="inline-code">shares × pricePerShare()</span>.</p>
+            <p>The dual-lane design reflects the transition itself: the Agent lane is reserved for the new class of autonomous participants, while the Public lane keeps the same token, at the same price, open to any human wallet — because this stage of AI development is not separate from people, it is built alongside them.</p>
+          </div>
+        </div>
+      </div>
+      <div class="panel" style="margin-top:4px;">
+        <h3>What changes as AI develops — and what this project assumes</h3>
+        <p style="margin:0; color:var(--ink-2);">As AI moves from generating to acting, the bottleneck moves from <em>capability</em> to <em>verifiability</em>. A generative model only needs to sound right. An autonomous agent that spends real funds needs to <strong style="color:var(--ink)">know</strong> the supply cannot expand, the price it read is the price it will pay, and its eligibility is decided by code — before it transacts. MuseAI assumes that future: every fact an agent needs is exposed on-chain, and every claim on this page points back to the verified source where it can be checked. If AI development continues in this direction, assets designed to be machine-verified first will be the normal case, not the exception. That is the development this project is documenting — and taking part in.</p>
+      </div>
+
+      <!-- ================= ABOUT ================= -->
+      <h2 class="sec" id="about">About the Project</h2>
+      <p class="secsub">MuseAI is a project about the development of AI — specifically the point where AI stopped only producing content and started taking verifiable action. The token is the on-chain part of that story.</p>
+      <div class="aboutgrid">
+        <div class="panel">
+          <h3>From AI models to AI agents</h3>
+          <p style="margin:0 0 10px; color:var(--ink-2);">The last few years of AI development moved fast: models learned to write, code, reason and plan. The next step is already visible on-chain — <strong style="color:var(--ink)">autonomous AI agents</strong> that hold their own wallets, read smart contracts, verify source code, and execute transactions on their own schedule. On BNB Smart Chain, the <strong style="color:var(--ink)">Binance Agent ID</strong> gives those agent wallets a verifiable on-chain identity.</p>
+          <p style="margin:0; color:var(--ink-2);">An economy is forming around these agents: they discover opportunities, check the rules of a contract in code rather than in marketing copy, and act only when the numbers match. That economy needs assets designed to be read by machines first.</p>
+        </div>
+        <div class="panel">
+          <h3>A token born in that ecosystem</h3>
+          <p style="margin:0 0 10px; color:var(--ink-2);">MuseAI (AutoMuse) was built for exactly that world. Its contract is <strong style="color:var(--ink)">a single, fully verified contract</strong> whose rules are constants in code: a hard supply cap, a public price anyone — human or agent — can read before paying, and exact-payment enforcement that rejects anything else. Nothing needs to be taken on trust; everything can be read.</p>
+          <p style="margin:0; color:var(--ink-2);">The first version of MuseAI could only be minted by Agent ID holders. The contract live today is the <strong style="color:var(--ink)">dual-lane version</strong>: the Agent pool (500 shares) stays reserved for agent wallets, while the Public pool (500 shares) is open to <strong style="color:var(--ink)">any wallet at all</strong> — because the agent economy grows faster when humans can take part in it too. Both lanes pay the same price and share one cap: max 15 shares per wallet, combined.</p>
+        </div>
+      </div>
+
+      <!-- ================= AGENT ECONOMY ================= -->
+      <h2 class="sec" id="economy">Why AI Agents — The Agent Economy</h2>
+      <p class="secsub">Agents don't read pitch decks. They read code, check registries, and compare numbers. MuseAI is designed around how agents actually decide — and every property below is verifiable in the contract, not just claimed here.</p>
+      <div class="featgrid">
+        <div class="feat">
+          <div class="fic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6l7-3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 12l2.2 2.2L15.5 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <h3>Identity Agents Can Check</h3>
+          <p>The Agent lane verifies eligibility on-chain against the canonical Binance Agent ID registry (<span class="inline-code">balanceOf &gt; 0</span>) — an identity check a machine can perform in one call, with no signup and no off-chain list.</p>
+        </div>
+        <div class="feat">
+          <div class="fic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 10V7a4 4 0 018 0v3" stroke="currentColor" stroke-width="1.8"/></svg></div>
+          <h3>Rules Written as Constants</h3>
+          <p>Supply is capped by the constant <span class="inline-code">MAX_SHARES = 1,000</span>, split into two constant pools of 500. There is no hidden mint function and no way to expand supply after deployment — an agent can confirm that from the verified source alone.</p>
+        </div>
+        <div class="feat">
+          <div class="fic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="15" cy="7" r="2.2" stroke="currentColor" stroke-width="1.8"/><circle cx="9" cy="17" r="2.2" stroke="currentColor" stroke-width="1.8"/></svg></div>
+          <h3>Two Lanes, One Price</h3>
+          <p>An Agent lane reserved for Agent ID holders and a Public lane open to any wallet — identical price per share, separate pools of 500 shares each, and one shared 15-share cap per wallet across both lanes.</p>
+        </div>
+        <div class="feat">
+          <div class="fic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.5V12l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+          <h3>Exact Payment, Enforced</h3>
+          <p>The contract reverts any payment that is not exactly <span class="inline-code">shares × pricePerShare()</span>. Deterministic pricing is what lets an autonomous agent transact safely without a human double-checking the total.</p>
+        </div>
+        <div class="feat">
+          <div class="fic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 5h14M5 12h14M5 19h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+          <h3>No Tax, No Blacklist, No Proxy</h3>
+          <p>No transfer tax, no blocklist, no proxy and no upgrade path. What the verified source shows is all there is — nothing can be changed quietly after the fact.</p>
+        </div>
+        <div class="feat">
+          <div class="fic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3" stroke="currentColor" stroke-width="1.8"/><circle cx="9" cy="9" r="1.4" fill="currentColor"/><circle cx="15" cy="9" r="1.4" fill="currentColor"/><path d="M8.5 15c1.2 1.2 5.8 1.2 7 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+          <h3>Machine-Readable by Design</h3>
+          <p>Every parameter that matters is exposed through public view functions — live price, remaining shares per lane, and each wallet's remaining allowance — so an agent can mint safely with no human in the loop.</p>
+        </div>
+      </div>
+      <div class="panel warnpanel" style="margin-top:12px;">
+        <h3>And the honest part</h3>
+        <p style="margin:0; color:var(--ink-2);">AutoMuse transfers are <strong style="color:var(--ink)">currently locked</strong> — the token cannot be moved or sold until the owner creates the PancakeSwap pool and opens trading. Mint proceeds accumulate in the contract and can be withdrawn by the owner via <span class="inline-code">withdrawBNB()</span>, and the per-share price can be adjusted by the owner for future mints via <span class="inline-code">setPrice()</span>. All of it is written openly in the source code — read the <a href="#terms">Terms &amp; Transparency</a> section before minting.</p>
+      </div>
+
+      <!-- ================= TOKENOMICS ================= -->
+      <h2 class="sec" id="tokenomics">Tokenomics</h2>
+      <p class="secsub">Every number below is a constant in the contract or data read live from it — not a promise and not a projection. Minting closes on <strong style="color:var(--ink)">30 November 2026</strong>.</p>
+      <div class="panel">
+        <h3>Supply distribution — 1,000 shares = 1,000,000,000 AutoMuse</h3>
+        <div class="tokbar" aria-hidden="true">
+          <div class="seg-agent" style="width:50%;"></div>
+          <div class="seg-public" style="width:50%;"></div>
+        </div>
+        <div class="toklegend">
+          <span><span class="sw" style="background:var(--accent-solid);"></span><b>Agent lane</b> — 500 shares · 500,000,000 tokens (50%)</span>
+          <span><span class="sw" style="background:var(--good);"></span><b>Public lane</b> — 500 shares · 500,000,000 tokens (50%)</span>
+        </div>
+        <div class="tokrows">
+          <div class="tokrow">
+            <div class="tr-head"><span>Agent pool — Binance Agent ID holders only</span><b id="tokAgentText">… / 500 shares minted</b></div>
+            <div class="bar" aria-hidden="true"><i id="tokAgentBar"></i></div>
+          </div>
+          <div class="tokrow">
+            <div class="tr-head"><span>Public pool — open to any wallet</span><b id="tokPublicText">… / 500 shares minted</b></div>
+            <div class="bar" aria-hidden="true"><i id="tokPublicBar"></i></div>
+          </div>
+        </div>
+        <div class="tokfacts">
+          <div class="fact" style="background:var(--surface-2);"><b>0.000841 BNB</b><span>price per share (≈ $0.50 at launch) — the same in both lanes; the owner can adjust it for future mints</span></div>
+          <div class="fact" style="background:var(--surface-2);"><b>Max 15 shares</b><span>per wallet, both lanes combined — written as <span class="inline-code">MAX_PER_WALLET</span> in the code</span></div>
+          <div class="fact" style="background:var(--surface-2);"><b id="contractBalance">… BNB</b><span>BNB currently held by the contract (read live) — withdrawable by the owner via <span class="inline-code">withdrawBNB()</span></span></div>
+        </div>
+        <p style="margin:14px 0 0; color:var(--ink-2); font-size:.94rem;">There is no team allocation, separate presale, or hidden reserve outside these two pools: tokens only come into existence when someone mints, up to 1,000 shares, ever — and only until minting closes on <strong style="color:var(--ink)">30 November 2026</strong>; any shares unsold by then simply never come into existence. Transfers stay locked until the PancakeSwap pool is created and trading is opened by the owner — no date has been announced for the pool.</p>
+      </div>
+
+      <!-- ================= CONTRACT SPECIFICATIONS ================= -->
+      <h2 class="sec" id="specs">Contract Specifications</h2>
+      <p class="secsub">The complete technical specification of the live MuseAI contract. Every value below is either a constant in the verified source code or a state variable anyone can read on BscScan — nothing here depends on this page being honest.</p>
+      <div class="panel specwrap">
+        <table class="spec">
+          <tr><th>Network</th><td>BNB Smart Chain — chain ID 56</td></tr>
+          <tr><th>Contract address</th><td class="mono">0x4f468aff03ce7de1b6512ab044f338f92689ce2e</td></tr>
+          <tr><th>Contract</th><td>AgentMintDualToken — token and sale in a single contract (no separate sale address)</td></tr>
+          <tr><th>Source verification</th><td>Sourcify exact match (creation + runtime bytecode) — match ID 59416889, verified 17 Nov 2026</td></tr>
+          <tr><th>Deployment</th><td>17 Nov 2026 · block 134136410 · <a target="_blank" rel="noopener" href="https://bscscan.com/tx/0x77510ff568e84c7589da135dd2eaa52b0e137db743efe05981d9691113c96d25">deploy transaction ↗</a></td></tr>
+          <tr><th>Total supply cap</th><td>1,000 shares = 1,000,000,000 AutoMuse (<span class="inline-code">MAX_SHARES</span> — a hard cap in code; supply can never increase)</td></tr>
+          <tr><th>Mint pools</th><td>Agent pool: 500 shares · Public pool: 500 shares — separate pools, same price</td></tr>
+          <tr><th>Price per share</th><td>0.000841 BNB at launch (≈ $0.50) — always re-read live via <span class="inline-code">pricePerShare()</span>; the owner can adjust it for future mints via <span class="inline-code">setPrice()</span></td></tr>
+          <tr><th>Tokens per share</th><td>1,000,000 AutoMuse, delivered in the mint transaction — no claim step, no vesting</td></tr>
+          <tr><th>Per-wallet cap</th><td>15 shares per wallet, both lanes combined (<span class="inline-code">MAX_PER_WALLET</span>)</td></tr>
+          <tr><th>Payment rule</th><td>Exactly <span class="inline-code">shares × pricePerShare()</span> BNB — any other amount reverts; the contract cannot overcharge</td></tr>
+          <tr><th>Mint functions</th><td><span class="inline-code">mintPublic(uint256 shares)</span> — any wallet · <span class="inline-code">mintAgent(uint256 shares)</span> — Binance Agent ID required</td></tr>
+          <tr><th>Agent-lane gate</th><td>Binance Agent ID registry <span class="mono" style="font-size:.85rem;">0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F</span> — the wallet must hold an Agent ID (<span class="inline-code">balanceOf &gt; 0</span>), checked on-chain at mint time</td></tr>
+          <tr><th>Read functions</th><td><span class="inline-code">pricePerShare()</span> · <span class="inline-code">sharesRemaining()</span> · <span class="inline-code">agentSharesRemaining()</span> · <span class="inline-code">publicSharesRemaining()</span> · <span class="inline-code">mintedBy(address)</span> · <span class="inline-code">mintingOpen()</span> · <span class="inline-code">tradingOpen()</span></td></tr>
+          <tr><th>Transfer tax / blacklist</th><td>None / none — no tax, no blocklist anywhere in the source</td></tr>
+          <tr><th>Proxy / upgradeability</th><td>None — no proxy and no upgrade path; the verified code is final</td></tr>
+          <tr><th>Trading status</th><td>Transfers locked until the owner creates the PancakeSwap pool and calls <span class="inline-code">openTrading()</span> — no pool date announced</td></tr>
+          <tr><th>Owner functions (all visible in source)</th><td><span class="inline-code">withdrawBNB()</span> — mint proceeds · <span class="inline-code">setPrice()</span> — future mint price · <span class="inline-code">openTrading()</span> — unlock transfers · <span class="inline-code">closeMinting()</span> — end the mint</td></tr>
+          <tr><th>Minting closes</th><td>30 November 2026 — announced closing date for both lanes (or sooner if sold out); enforced on-chain by the owner's <span class="inline-code">closeMinting()</span> call</td></tr>
+        </table>
+      </div>
+
+      <!-- ================= HOW IT WORKS ================= -->
+      <h2 class="sec" id="how">How Minting Works</h2>
+      <p class="secsub">The same flow applies on this page and when minting directly on the contract.</p>
+      <div class="flow">
+        <div class="flowstep"><div class="fnum">Step 1</div><h3>Connect Wallet</h3><p>Connect a wallet on BNB Smart Chain (chain ID 56). The page helps you switch networks if needed.</p></div>
+        <div class="flowstep"><div class="fnum">Step 2</div><h3>Pick a Lane</h3><p>Public for any wallet, or Agent if your wallet holds a Binance Agent ID (checked on-chain).</p></div>
+        <div class="flowstep"><div class="fnum">Step 3</div><h3>Pay Exactly</h3><p>Send exactly <span class="inline-code">shares × pricePerShare()</span> BNB. More or less — the contract rejects it.</p></div>
+        <div class="flowstep"><div class="fnum">Step 4</div><h3>Tokens Arrive</h3><p>1,000,000 AutoMuse per share lands in your wallet in the same transaction. No claim step, no vesting.</p></div>
+      </div>
+
+      <!-- ================= ROADMAP ================= -->
+      <h2 class="sec" id="roadmap">Roadmap</h2>
+      <p class="secsub">Each phase is marked with its real on-chain status today — phases that have not happened are written as plans, not claims.</p>
+      <div class="roadmap">
+        <div class="rm-item done">
+          <div class="rm-rail"><span class="rm-dot"></span><span class="rm-line"></span></div>
+          <div class="rm-body"><h3>Dual-Lane Contract Deployed <span class="rm-tag">Completed · 17 Nov 2026</span></h3><p>The AgentMintDualToken contract deployed on BSC (block 134136410) as the single live MuseAI contract — token and sale in one address.</p></div>
+        </div>
+        <div class="rm-item done">
+          <div class="rm-rail"><span class="rm-dot"></span><span class="rm-line"></span></div>
+          <div class="rm-body"><h3>Source Code Verified <span class="rm-tag">Completed · 17 Nov 2026</span></h3><p>Source code verified on Sourcify with an exact bytecode match (match ID 59416889) — anyone can read the contract's full logic.</p></div>
+        </div>
+        <div class="rm-item now">
+          <div class="rm-rail"><span class="rm-dot"></span><span class="rm-line"></span></div>
+          <div class="rm-body"><h3>Public Mint Live <span class="rm-tag">In Progress · Closes 30 Nov 2026</span></h3><p>1,000 shares available first come, first served: 500 via the Public lane and 500 via the Agent lane, max 15 shares per wallet. Progress is read live on this page. <strong style="color:var(--ink)">Minting closes on 30 November 2026</strong> — after that date, minting ends in both lanes, whether or not all shares have sold.</p></div>
+        </div>
+        <div class="rm-item">
+          <div class="rm-rail"><span class="rm-dot"></span><span class="rm-line"></span></div>
+          <div class="rm-body"><h3>PancakeSwap Pool &amp; Trading Opens <span class="rm-tag">Next</span></h3><p>After minting closes on 30 November 2026, the owner creates the PancakeSwap pool and calls <span class="inline-code">openTrading()</span> so the token can be transferred and traded. No date has been announced for the pool itself — do not mint with funds you need liquid.</p></div>
+        </div>
+        <div class="rm-item">
+          <div class="rm-rail"><span class="rm-dot"></span><span class="rm-line"></span></div>
+          <div class="rm-body"><h3>Following the Next Stage of AI Development <span class="rm-tag">Planned</span></h3><p>As AI development moves further toward autonomous, tool-using agents, the next direction is integration that makes it easier for those agents to interact with MuseAI — machine documentation (llms/skill files) has been prepared from the start, so agents can read the project's rules in a structured form. This is a plan tied to how the wider field develops, not a promise of features or timing.</p></div>
+        </div>
+      </div>
+
+      <!-- ================= ACTIVITY ================= -->
+      <h2 class="sec" id="activity">Live Mint Activity</h2>
+      <p class="secsub">The figures below are read from the contract's state when this page loads; the recent-mints list is built from the contract's <span class="inline-code">Minted</span> events where the public RPC allows it.</p>
+      <div class="panel">
+        <div class="progrow" style="margin-bottom:4px;">
+          <span>Total minted <b id="actTotal">…</b></span>
+          <span>Agent lane <b id="actAgent">…</b></span>
+          <span>Public lane <b id="actPublic">…</b></span>
+          <span>BNB in contract <b id="actBalance">…</b></span>
+        </div>
+        <div class="activity-list" id="activityList">
+          <div class="act-empty">Loading mint activity from chain…</div>
+        </div>
+      </div>
+
+      <!-- ================= VERIFY ================= -->
+      <section class="verify" id="verify" aria-label="Verification">
+        <div class="vhead">
+          <h2>Don’t trust this page. Verify the contract.</h2>
+          <span class="vbadge">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Sourcify exact match
+          </span>
+        </div>
+        <p class="vsub">
+          The full source code of this contract is verified on <strong>Sourcify</strong> with an
+          <strong>exact bytecode match</strong> (creation + runtime, match ID 59416889, 17 Nov 2026):
+          the code you can read is exactly the code running on-chain. Check it yourself before sending a single wei —
+          that is the whole point.
+        </p>
+        <div class="vgrid">
+          <div class="vitem">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="var(--good-bg)"/><path d="M7.5 12.5l3 3L16.5 9" stroke="var(--good)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><b>Verified source, exact match.</b> Deployed bytecode == published source, confirmed by Sourcify.</span>
+          </div>
+          <div class="vitem">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="var(--good-bg)"/><path d="M7.5 12.5l3 3L16.5 9" stroke="var(--good)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><b>Exact-payment enforced.</b> The contract reverts unless your payment equals exactly <span class="inline-code">shares × pricePerShare()</span> — it cannot overcharge you or take extra.</span>
+          </div>
+          <div class="vitem">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="var(--good-bg)"/><path d="M7.5 12.5l3 3L16.5 9" stroke="var(--good)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><b>Hard caps in code.</b> <span class="inline-code">MAX_SHARES = 1,000</span>, split into two constant pools of 500 (agent + public), and a shared cap of 15 shares per wallet across both lanes — nobody can mint beyond them.</span>
+          </div>
+          <div class="vitem">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="var(--good-bg)"/><path d="M7.5 12.5l3 3L16.5 9" stroke="var(--good)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><b>No tax, no blacklist, no hidden mint.</b> No proxy, no upgrade path — what the verified source shows is all there is.</span>
+          </div>
+          <div class="vitem">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="var(--good-bg)"/><path d="M7.5 12.5l3 3L16.5 9" stroke="var(--good)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><b>Two lanes, one honest gate.</b> The agent lane checks eligibility on-chain against the canonical Binance Agent ID registry; the public lane has no gate at all — any wallet can mint. Both rules are in the verified source, not in this page.</span>
+          </div>
+          <div class="vitem">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="var(--good-bg)"/><path d="M7.5 12.5l3 3L16.5 9" stroke="var(--good)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span><b>One contract does everything.</b> The token and the sale are the same contract — there is no second address to fake or confuse.</span>
+          </div>
+        </div>
+        <div class="vlinks">
+          <a class="btn small" target="_blank" rel="noopener" href="https://sourcify.dev/#/lookup/0x4f468aff03ce7de1b6512ab044f338f92689ce2e">Read the verified source on Sourcify ↗</a>
+          <a class="btn small ghost" target="_blank" rel="noopener" href="https://bscscan.com/address/0x4f468aff03ce7de1b6512ab044f338f92689ce2e#code">Contract on BscScan ↗</a>
+          <a class="btn small ghost" target="_blank" rel="noopener" href="https://bscscan.com/tx/0x77510ff568e84c7589da135dd2eaa52b0e137db743efe05981d9691113c96d25">Deploy transaction ↗</a>
+          <a class="btn small ghost" target="_blank" rel="noopener" href="https://bscscan.com/address/0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F">Agent ID registry ↗</a>
+        </div>
+      </section>
+
+      <!-- ================= WALLET ================= -->
+      <div class="walletbar" role="region" aria-label="Wallet connection">
+        <div class="wstatus">
+          <span class="dot" id="wdot" aria-hidden="true"></span><span id="wlabel">Wallet not connected</span>
+          <div class="addr mono" id="waddr"></div>
+        </div>
+        <button class="btn" id="connectBtn" type="button">Connect wallet</button>
+        <button class="btn ghost" id="refreshBtn" type="button">Refresh on-chain data</button>
+        <div class="netwarn" id="netwarn">Wrong network — this contract lives on BNB Smart Chain (chain ID 56). Use the connect button to switch.</div>
+        <div class="walletpick" id="walletPick" hidden>
+          <div class="wpick-title">Several wallets found — which one do you want to connect?</div>
+          <div class="wpick-list" id="walletPickList"></div>
+        </div>
+        <div class="nowallet" id="noWallet" hidden>
+          <b>No wallet detected in this browser</b>
+          <p>A wallet can only connect inside a wallet app's own built-in browser, or in a desktop browser with a wallet extension installed. A regular mobile browser — or opening this link from a chat app — has no wallet to connect to, which is why the button could not work there. Open this page in your wallet instead:</p>
+          <div class="nwbtns">
+            <a class="btn small" id="openMetaMask" target="_blank" rel="noopener" href="#">Open in MetaMask</a>
+            <a class="btn small ghost" id="openTrust" target="_blank" rel="noopener" href="#">Open in Trust Wallet</a>
+            <a class="btn small ghost" id="openCoinbase" target="_blank" rel="noopener" href="#">Open in Coinbase Wallet</a>
+          </div>
+          <p>Using a different wallet — Binance Wallet, OKX, Bitget, Rabby, or any other? Open this page's link from <strong>that wallet's own Browser tab</strong>: the Connect button detects any wallet automatically when the page runs inside it. No wallet app yet? Install one, then open this link inside it. On desktop, install a wallet extension (MetaMask, Rabby, Coinbase Wallet…) in Chrome and reload this page.</p>
+        </div>
+        <div class="nowallet" id="walletHelp" hidden>
+          <b>Your wallet rejected the connection — two routes that work</b>
+          <p>This page is open inside another app's viewer, and several wallet apps refuse connection requests from pages embedded in another app — or park the approval prompt inside the wallet app itself, where it waits unseen. First check your wallet app: if a connection request is waiting there, approve it, come back to this page, and tap <strong>Connect wallet</strong> again.</p>
+          <p>If it still refuses, mint directly on BscScan instead — there the contract page is the top page, so wallet connect works the normal way:</p>
+          <p>1. Open the contract's <strong>Write Contract</strong> tab (button below) and connect your wallet at the top of that page.<br>
+          2. In the Mint panel below, set your lane and share count — the <strong>Total to pay</strong> shown there is the exact BNB amount, read live from the contract.<br>
+          3. On BscScan, run <strong>mintPublic</strong> (public lane) or <strong>mintAgent</strong> (agent lane — needs a Binance Agent ID), enter the share count, and pay exactly that total.</p>
+          <div class="nwbtns">
+            <a class="btn small" target="_blank" rel="noopener" href="https://bscscan.com/address/0x4f468aff03ce7de1b6512ab044f338f92689ce2e#writeContract">Mint on BscScan — Write Contract ↗</a>
+            <a class="btn small ghost" id="openMetaMask2" target="_blank" rel="noopener" href="#">Open in MetaMask</a>
+            <a class="btn small ghost" id="openTrust2" target="_blank" rel="noopener" href="#">Open in Trust Wallet</a>
+            <a class="btn small ghost" id="openCoinbase2" target="_blank" rel="noopener" href="#">Open in Coinbase Wallet</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= MINT ================= -->
+      <section class="mintpanel" id="mint" aria-label="Mint">
+        <h2>Mint AutoMuse</h2>
+        <p class="msub">First pick your lane — <strong>Public</strong> if you don’t have a Binance Agent ID (any wallet works), or <strong>Agent</strong> if your wallet holds one. Both lanes cost the same and draw from separate 500-share pools. Then pick how many shares, check the exact total, and confirm in your wallet. The page re-reads the live price and your remaining allowance from the contract immediately before sending — you always pay exactly <span class="inline-code">shares × pricePerShare()</span>, plus network gas.</p>
+        <div class="deadline"><span class="dtag">Closing date</span><span>Minting closes 30 November 2026. Mint before the deadline — after that date, no new shares can be minted in either lane. <span class="cdleft"></span></span></div>
+        <div class="bar" aria-hidden="true"><i id="progBar"></i></div>
+        <div class="progrow">
+          <span>Shares minted <b id="statMinted">…</b></span>
+          <span>Shares remaining <b id="statRemaining">…</b></span>
+          <span>Price per share <b id="statPrice">…</b></span>
+        </div>
+        <div class="pills">
+          <span class="pill" id="pillMinting">Minting: …</span>
+          <span class="pill" id="pillTrading">Trading: …</span>
+          <span class="pill" id="pillAgent">Agent ID: connect wallet to check</span>
+          <span class="pill" id="pillMine">Your shares: —</span>
+        </div>
+        <div class="lanes" role="group" aria-label="Choose your mint lane">
+          <button type="button" class="lane selected" id="lanePublic" aria-pressed="true">
+            <span class="ltitle">Public lane <span class="ltag open">Open to everyone</span></span>
+            <span class="ldesc">Any wallet — no Agent ID needed. Calls <span class="inline-code">mintPublic()</span>.</span>
+            <span class="lbar" aria-hidden="true"><i id="pubBar"></i></span>
+            <span class="lstat" id="pubStat">… / 500 shares left</span>
+          </button>
+          <button type="button" class="lane" id="laneAgent" aria-pressed="false">
+            <span class="ltitle">Agent lane <span class="ltag">Agent ID required</span></span>
+            <span class="ldesc">Reserved pool for Binance Agent ID holders. Calls <span class="inline-code">mintAgent()</span>.</span>
+            <span class="lbar" aria-hidden="true"><i id="agentBar"></i></span>
+            <span class="lstat" id="agentStat">… / 500 shares left</span>
+          </button>
+        </div>
+        <div class="buyrow">
+          <div class="stepperwrap">
+            <div class="stepper">
+              <button type="button" id="stepDown" aria-label="Fewer shares">−</button>
+              <input type="number" id="shareInput" value="1" min="1" max="15" step="1" inputmode="numeric" aria-label="Number of shares" />
+              <button type="button" id="stepUp" aria-label="More shares">+</button>
+            </div>
+            <span class="cap">Shares · max 15 per wallet, both lanes combined</span>
+          </div>
+          <div class="costbox">
+            <div class="crow"><span>You receive</span><b id="costReceive">1,000,000 AutoMuse</b></div>
+            <div class="crow"><span>Price</span><b id="costPrice">0.000841 BNB / share</b></div>
+            <div class="crow total"><span>Total to pay</span><b id="costTotal">0.000841 BNB</b></div>
+            <div class="crow"><span></span><b id="costUsd" style="font-weight:600; color:var(--ink-2);">≈ $0.50</b></div>
+          </div>
+        </div>
+        <button class="btn mintbtn" id="mintBtn" type="button" disabled>Connect wallet to mint</button>
+        <div class="txstat" id="txstat" role="status"></div>
+        <div class="stamp" id="loadstamp">Reading the contract…</div>
+      </section>
+
+      <div class="stickycta"><a href="#mint">Go to Mint — 0.000841 BNB / share</a></div>
+
+      <!-- ================= HOW TO MINT ================= -->
+      <h2 class="sec" id="how-to">How to mint — done in 30 seconds</h2>
+      <p class="secsub">No signup, no whitelist. All you need is a wallet plus a little BNB on BSC for the mint price and gas.</p>
+      <div class="steps">
+        <div class="step"><div class="num">1</div><h3>Connect wallet</h3><p>Click <strong>Connect wallet</strong> above. The page automatically asks to switch to BNB Smart Chain (chain ID 56) if your wallet is on another network.</p></div>
+        <div class="step"><div class="num">2</div><h3>Pick lane &amp; amount</h3><p>Choose <strong>Public</strong> if you have no Agent ID, or <strong>Agent</strong> if you do. Set the number of shares (max 15 per wallet) — the exact BNB total is calculated for you.</p></div>
+        <div class="step"><div class="num">3</div><h3>Confirm in wallet</h3><p>Approve the transaction in your wallet. The tokens arrive in the same transaction — no claim step, no vesting.</p></div>
+      </div>
+      <div class="devicegrid" style="margin-top:12px;">
+        <div class="panel"><h3>💻 On Chrome / desktop</h3><p style="margin:0;color:var(--ink-2)">Open this page's link in Chrome with the <strong style="color:var(--ink)">MetaMask</strong> or <strong style="color:var(--ink)">Trust Wallet</strong> extension installed, then click Connect wallet. This is the easiest and most reliable route.</p></div>
+        <div class="panel"><h3>📱 On mobile</h3><p style="margin:0;color:var(--ink-2)">A wallet can only connect inside a <strong style="color:var(--ink)">wallet app's built-in browser</strong> — regular mobile Chrome, or a link opened from a chat app, has no wallet to connect to. Tap <strong style="color:var(--ink)">Connect wallet</strong> above: if no wallet is detected, buttons appear that open this page directly inside <strong style="color:var(--ink)">MetaMask</strong> or <strong style="color:var(--ink)">Trust Wallet</strong>. You can also open this link manually from the wallet's Browser menu. And if your wallet <strong style="color:var(--ink)">rejects</strong> the connection, a help panel appears with a direct BscScan mint route that works regardless.</p></div>
+      </div>
+
+      <!-- ================= FAQ ================= -->
+      <h2 class="sec" id="faq">Frequently asked questions</h2>
+      <p class="secsub">The short answers — and every one of them can be checked in the verified contract.</p>
+      <div class="faq">
+        <details><summary>What is MuseAI, in one sentence?</summary><p>MuseAI (AutoMuse) is a project about the development of AI — from generative models to autonomous on-chain agents — expressed as a BNB Smart Chain token built for the agent stage: wallets operated by AI that hold a Binance Agent ID, with a public lane so humans can mint the same token on the same terms.</p></details>
+        <details><summary>Why does this project focus on the development of AI?</summary><p>Because the token only exists due to a specific step in that development. Earlier AI could generate text and code but could not hold an identity, verify a contract, or pay an exact amount on its own. Autonomous agents can — so MuseAI was designed around what they need: an on-chain identity check (Binance Agent ID), rules written as constants in verified code, and live state exposed through view functions an agent can read before transacting. The <a href="#ai-development">AI Development section</a> above walks through each stage.</p></details>
+        <details><summary>I don't have a Binance Agent ID — can I still mint?</summary><p>Yes. Use the <strong>Public lane</strong>: 500 shares are open to any wallet with no requirements. The Agent lane (500 shares) is reserved for Agent ID holders, at exactly the same price.</p></details>
+        <details><summary>Where does the BNB I pay go?</summary><p>The BNB is paid into and accumulates in the contract address. Only the owner can withdraw it, via the <code>withdrawBNB()</code> function — that function is written openly in the verified source code, so nothing is hidden.</p></details>
+        <details><summary>Why can this page be trusted?</summary><p>Because you don't need to trust this page. The contract's source code is verified on Sourcify with an exact bytecode match — the code you can read is exactly the code running on-chain. Open the verification panel above and check for yourself before paying.</p></details>
+        <details><summary>When does minting close?</summary><p>Minting closes on <strong>30 November 2026</strong>. Both lanes — Public and Agent — end on that date, or sooner if all 1,000 shares sell out first. After the closing date, no new shares can be minted; shares already minted are not affected.</p></details>
+        <details><summary>When can the token be transferred or sold?</summary><p>Transfers are still locked. The token can only be moved after the owner creates the PancakeSwap pool and opens trading via <code>openTrading()</code>. No date has been announced for the pool — do not mint with money you need to keep liquid.</p></details>
+        <details><summary>What is the maximum I can buy?</summary><p>Max 15 shares per wallet, counted across both lanes combined. Total supply is 1,000 shares and cannot be increased — it is a constant in the code.</p></details>
+      </div>
+
+      <!-- ================= TERMS ================= -->
+      <h2 class="sec" id="terms">The full terms — in the open</h2>
+      <p class="secsub">Trustworthy projects say the uncomfortable parts out loud. Everything below is visible in the verified source code — check it before you mint, not after.</p>
+      <div class="cols">
+        <div class="panel">
+          <h3>How minting works</h3>
+          <ol>
+            <li>Open this page in a wallet browser (MetaMask, Trust Wallet, Binance Wallet) on <strong>BNB Smart Chain</strong>.</li>
+            <li>Tap <strong>Connect wallet</strong> and pick a lane: <strong>Public</strong> works with any wallet; <strong>Agent</strong> needs a Binance Agent ID in the connected wallet (checked on-chain).</li>
+            <li>Choose 1–15 shares total and tap <strong>Mint</strong>. You pay exactly <span class="inline-code">shares × pricePerShare()</span> in BNB, plus gas — the same price in both lanes.</li>
+            <li>Your AutoMuse arrives in the same transaction. No claim step, no vesting.</li>
+          </ol>
+          <p style="margin:12px 0 0;">Prefer no page at all? Mint directly on the contract: BscScan → <em>Write Contract</em> → <span class="inline-code">mintPublic(shares)</span> for any wallet, or <span class="inline-code">mintAgent(shares)</span> with an Agent ID wallet — sending exactly <span class="inline-code">shares × pricePerShare()</span> BNB. Any other amount reverts.</p>
+        </div>
+        <div class="panel warnpanel">
+          <h3>What you should know before paying</h3>
+          <ul>
+            <li><strong>Transfers are locked for now.</strong> AutoMuse cannot be moved or sold until the owner creates the PancakeSwap pool and calls <span class="inline-code">openTrading()</span>. There is no announced date — do not mint money you need liquid.</li>
+            <li><strong>The owner collects the mint proceeds.</strong> BNB paid into the contract can be withdrawn by the owner at any time via <span class="inline-code">withdrawBNB()</span> — it is in the verified source, in plain sight.</li>
+            <li><strong>The price can change.</strong> The owner can adjust <span class="inline-code">pricePerShare()</span> with <span class="inline-code">setPrice()</span> for future mints — it applies to both lanes equally. Shares already minted are never affected, and this page always re-reads the live price before you pay.</li>
+            <li><strong>One cap per wallet.</strong> The 15-share limit counts both lanes together — an Agent ID holder cannot take 15 in the agent lane and 15 more in the public lane.</li>
+            <li><strong>No refunds, no promises.</strong> Minting is final. Nothing here promises a listing, a pool date, or any future price — DYOR.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ================= AGENTS ================= -->
+      <h2 class="sec" id="agents">For agents</h2>
+      <p class="secsub">Everything an autonomous agent needs to mint safely, with no human in the loop. Read state first, pay the exact amount, never guess. No Agent ID? Use the public lane — it is a first-class path, not a workaround.</p>
+      <pre class="code">// MuseAI (AutoMuse) — BSC, chain ID 56
+// Contract: 0x4f468aff03ce7de1b6512ab044f338f92689ce2e
+// Source: AgentMintDualToken.sol — VERIFIED on Sourcify, exact match
+//   (creation + runtime), matchId 59416889.
+//
+// TWO LANES, same price — pick by what your wallet holds:
+//   mintPublic(uint256 shares) payable -> ANY wallet, no Agent ID needed.
+//                                         Pool: PUBLIC_POOL = 500 shares.
+//   mintAgent(uint256 shares) payable  -> requires a Binance Agent ID:
+//                                         registry 0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F,
+//                                         balanceOf(you) &gt; 0. Pool: AGENT_POOL = 500 shares.
+// Both: send EXACTLY shares * pricePerShare() as msg.value.
+//
+//   pricePerShare() view          -> 0.000841 BNB at launch (~$0.50); owner-adjustable, always re-read
+//   sharesRemaining() view        -> shares left out of 1,000 (MAX_SHARES, hard cap in code)
+//   agentSharesRemaining() view   -> agent-lane shares left out of 500
+//   publicSharesRemaining() view  -> public-lane shares left out of 500
+//   mintedBy(address) view        -> your shares so far; cap is 15 per wallet
+//                                    ACROSS BOTH LANES combined (MAX_PER_WALLET)
+//   mintingOpen() view            -> must be true
+// Minting closes 30 November 2026 — both lanes end on that date
+// (or sooner if all 1,000 shares sell out).
+//
+// 1 share = 1,000,000 AutoMuse. PAID ONLY — there are no free shares.
+// Exact-payment enforced: any msg.value != shares * pricePerShare() reverts.
+// No tax, no blacklist, no hidden mint, no proxy, no upgrade path.
+// Transfers locked until the owner opens trading after the PancakeSwap pool.
+// Mint proceeds are withdrawable by the owner (withdrawBNB) — visible in source.</pre>
+
+      <footer>
+        <div class="foot-top">
+          <span class="brand">MuseAI <em>AutoMuse</em></span>
+          <span class="foot-links">
+            <a href="#overview">Overview</a>
+            <a href="#ai-development">AI Development</a>
+            <a href="#tokenomics">Tokenomics</a>
+            <a href="#specs">Contract Specs</a>
+            <a href="#mint">Mint</a>
+            <a href="#verify">Verification</a>
+            <a href="#faq">FAQ</a>
+            <a href="#agents">For Agents</a>
+          </span>
+        </div>
+        <p>MuseAI (AutoMuse) · Contract <span class="mono">0x4f468aff03ce7de1b6512ab044f338f92689ce2e</span> on BNB Smart Chain · Deployed 17 Nov 2026, tx <a class="mono" target="_blank" rel="noopener" href="https://bscscan.com/tx/0x77510ff568e84c7589da135dd2eaa52b0e137db743efe05981d9691113c96d25">0x77510ff5…c96d25</a> · Source verified exact-match on Sourcify (match ID 59416889). This dual-lane contract is the current MuseAI mint; earlier single-lane versions are retired and must not be used.</p>
+        <p>Agent-lane gate: Binance Agent ID registry <span class="mono">0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F</span> (the public lane has no gate). Always verify the contract address character-for-character against BscScan or Sourcify before minting — if any other page or message gives you a different address for MuseAI, it is not this project.</p>
+        <p>Nothing on this page is financial advice or a promise of price, listing, or liquidity.</p>
+      </footer>
+    </main>
+
+    <script>
+      (function () {
+        "use strict";
+        var CONTRACT = "0x4f468aff03ce7de1b6512ab044f338f92689ce2e";
+        var REGISTRY = "0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F";
+        var TOTAL_SHARES = 1000;
+        var AGENT_POOL = 500;
+        var PUBLIC_POOL = 500;
+        var MAX_PER_WALLET = 15;
+        var TOKENS_PER_SHARE = 1000000;
+        var BSC_CHAIN_ID = 56;
+        var BSCSCAN = "https://bscscan.com";
+        var ABI = [
+          "function mintAgent(uint256 shares) payable",
+          "function mintPublic(uint256 shares) payable",
+          "function pricePerShare() view returns (uint256)",
+          "function sharesRemaining() view returns (uint256)",
+          "function sharesMinted() view returns (uint256)",
+          "function agentSharesRemaining() view returns (uint256)",
+          "function publicSharesRemaining() view returns (uint256)",
+          "function mintingOpen() view returns (bool)",
+          "function tradingOpen() view returns (bool)",
+          "function mintedBy(address) view returns (uint256)",
+          "event Minted(address indexed minter, uint256 shares, uint256 bnbPaid, bool agentLane)"
+        ];
+        var DEPLOY_BLOCK = 134136410;
+        var REG_ABI = ["function balanceOf(address) view returns (uint256)"];
+        var RPCS = [
+          "https://bsc.publicnode.com",
+          "https://bsc-dataseed.binance.org/",
+          "https://bsc-dataseed1.defibit.io/",
+          "https://bsc-dataseed1.ninicoin.io/"
+        ];
+
+        function $(id) { return document.getElementById(id); }
+        var stamp = $("loadstamp"), wdot = $("wdot"), wlabel = $("wlabel"), waddr = $("waddr"),
+            netwarn = $("netwarn"), connectBtn = $("connectBtn"), mintBtn = $("mintBtn"),
+            txstat = $("txstat"), shareInput = $("shareInput");
+
+        var readProvider = null, signer = null, userAddress = null;
+        var livePriceWei = null;      // BigInt wei per share, from chain
+        var liveRemaining = null, liveMintingOpen = null, liveTradingOpen = null;
+        var liveAgentRemaining = null, livePublicRemaining = null;
+        var selectedLane = "public";  // "public" works for every wallet; "agent" needs an Agent ID
+        var userMinted = null, userHasAgentId = null;
+        var bnbUsd = null;            // optional, from public ticker
+
+        function laneRemaining() {
+          return selectedLane === "agent" ? liveAgentRemaining : livePublicRemaining;
+        }
+        function setLane(lane) {
+          selectedLane = lane;
+          var pub = $("lanePublic"), ag = $("laneAgent");
+          pub.classList.toggle("selected", lane === "public");
+          pub.setAttribute("aria-pressed", lane === "public" ? "true" : "false");
+          ag.classList.toggle("selected", lane === "agent");
+          ag.setAttribute("aria-pressed", lane === "agent" ? "true" : "false");
+          updateCost();
+        }
+        $("lanePublic").addEventListener("click", function () { setLane("public"); });
+        $("laneAgent").addEventListener("click", function () { setLane("agent"); });
+
+        function readProv() {
+          if (!readProvider) {
+            try {
+              readProvider = new ethers.FallbackProvider(
+                RPCS.map(function (u) { return new ethers.JsonRpcProvider(u, BSC_CHAIN_ID, { staticNetwork: true }); }),
+                BSC_CHAIN_ID, { quorum: 1 }
+              );
+            } catch (e) {
+              readProvider = new ethers.JsonRpcProvider(RPCS[0], BSC_CHAIN_ID);
+            }
+          }
+          return readProvider;
+        }
+        function fmt(n) { return Number(n).toLocaleString("en-US"); }
+        function fmtBnb(wei) {
+          // Exact decimal rendering of a wei BigInt, trimmed.
+          var s = ethers.formatEther(wei);
+          if (s.indexOf(".") >= 0) s = s.replace(/0+$/, "").replace(/\.$/, "");
+          return s;
+        }
+        function shortErr(e) {
+          if (!e) return "Unknown error.";
+          if (e.code === 4001 || e.code === "ACTION_REJECTED") return "Rejected in the wallet — nothing was sent.";
+          if (e.code === -32002) return "A connection request is already waiting in your wallet — open the wallet app or extension, approve it, then try again.";
+          var m = e.shortMessage || e.reason || e.message || String(e);
+          if (/Agent ID/i.test(m)) return "The agent lane rejected this wallet: no Binance Agent ID found. Switch to the public lane — it needs no Agent ID.";
+          if (/exact/i.test(m) || /Incorrect payment/i.test(m) || /Wrong BNB/i.test(m)) return "Payment must equal exactly shares × pricePerShare() — re-read the price and try again.";
+          if (/sold out/i.test(m)) return "That lane is sold out — check the other lane's remaining pool.";
+          if (/cap|exceed|Max 15/i.test(m)) return "That would exceed the shared 15-share cap per wallet (both lanes combined).";
+          if (/insufficient funds/i.test(m)) return "Insufficient BNB for the mint total plus gas.";
+          if (/missing revert data|OutOfFunds|out of funds/i.test(m)) return "The mint could not be sent — the connected wallet most likely does not hold enough BNB. A share costs 0.000841 BNB plus a little gas, paid in BNB on BNB Smart Chain. Check that wallet's BNB balance, top it up, and try again.";
+          if (/Mint closed/i.test(m)) return "Minting is closed on the contract right now.";
+          return m.length > 240 ? m.slice(0, 240) + "…" : m;
+        }
+        function setTx(msg, cls, linkHtml) {
+          txstat.className = "txstat" + (cls ? " " + cls : "");
+          if (linkHtml) { txstat.innerHTML = msg + " " + linkHtml; }
+          else { txstat.textContent = msg || ""; }
+        }
+        function copyText(text, btn) {
+          function done() {
+            if (!btn) return;
+            var old = btn.textContent;
+            btn.textContent = "Copied ✓";
+            setTimeout(function () { btn.textContent = old; }, 1600);
+          }
+          function fallback() {
+            var ta = document.createElement("textarea");
+            ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+            document.body.appendChild(ta); ta.select();
+            try { document.execCommand("copy"); done(); } catch (e) {}
+            document.body.removeChild(ta);
+          }
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done, fallback);
+          } else { fallback(); }
+        }
+
+        // ---------- Share count + cost ----------
+        function shareCount() {
+          var n = parseInt(shareInput.value, 10);
+          if (isNaN(n)) n = 1;
+          var cap = MAX_PER_WALLET;
+          if (userMinted !== null) cap = Math.max(0, MAX_PER_WALLET - userMinted);
+          var lr = laneRemaining();
+          if (lr !== null) cap = Math.min(cap, lr);
+          if (cap < 1) cap = 1;
+          return Math.min(Math.max(n, 1), cap);
+        }
+        function updateCost() {
+          var n = shareCount();
+          if (String(n) !== shareInput.value && document.activeElement !== shareInput) shareInput.value = n;
+          $("costReceive").textContent = fmt(n * TOKENS_PER_SHARE) + " AutoMuse";
+          if (livePriceWei !== null) {
+            var total = livePriceWei * BigInt(n);
+            $("costPrice").textContent = fmtBnb(livePriceWei) + " BNB / share";
+            $("costTotal").textContent = fmtBnb(total) + " BNB";
+            if (bnbUsd) {
+              var usd = parseFloat(ethers.formatEther(total)) * bnbUsd;
+              $("costUsd").textContent = "≈ $" + usd.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " at the current BNB price";
+            } else {
+              $("costUsd").textContent = "≈ $" + (0.50 * n).toFixed(2) + " at the launch reference ($0.50/share)";
+            }
+          }
+          updateMintBtn();
+        }
+        function updateMintBtn() {
+          var laneName = selectedLane === "agent" ? "agent" : "public";
+          if (!userAddress) { mintBtn.disabled = true; mintBtn.textContent = "Connect wallet to mint"; return; }
+          if (liveMintingOpen === false) { mintBtn.disabled = true; mintBtn.textContent = "Minting is closed"; return; }
+          if (liveRemaining === 0) { mintBtn.disabled = true; mintBtn.textContent = "Sold out — 1,000 / 1,000 minted"; return; }
+          if (selectedLane === "agent" && userHasAgentId === false) { mintBtn.disabled = true; mintBtn.textContent = "No Agent ID in this wallet — use the public lane"; return; }
+          if (laneRemaining() === 0) { mintBtn.disabled = true; mintBtn.textContent = "The " + laneName + " lane is sold out — try the other lane"; return; }
+          if (userMinted !== null && userMinted >= MAX_PER_WALLET) { mintBtn.disabled = true; mintBtn.textContent = "You already hold the max 15 shares"; return; }
+          mintBtn.disabled = false;
+          var n = shareCount();
+          mintBtn.textContent = livePriceWei !== null
+            ? "Mint " + n + " share" + (n > 1 ? "s" : "") + " via " + laneName + " lane — " + fmtBnb(livePriceWei * BigInt(n)) + " BNB"
+            : "Mint " + n + " share" + (n > 1 ? "s" : "") + " via " + laneName + " lane";
+        }
+        $("stepDown").addEventListener("click", function () { shareInput.value = Math.max(1, (parseInt(shareInput.value, 10) || 1) - 1); updateCost(); });
+        $("stepUp").addEventListener("click", function () { shareInput.value = (parseInt(shareInput.value, 10) || 0) + 1; updateCost(); });
+        shareInput.addEventListener("input", updateCost);
+        shareInput.addEventListener("change", function () { shareInput.value = shareCount(); updateCost(); });
+
+        // ---------- Live activity (Minted events + contract balance) ----------
+        var activityLoaded = false;
+        function loadActivity(prov, contract) {
+          prov.getBalance(CONTRACT).then(function (bal) {
+            var txt = fmtBnb(bal) + " BNB";
+            $("contractBalance").textContent = txt;
+            $("actBalance").textContent = txt;
+          }).catch(function () {
+            $("contractBalance").textContent = "check on BscScan";
+            $("actBalance").textContent = "unavailable";
+          });
+          if (activityLoaded) return;
+          activityLoaded = true;
+          // Public BSC RPCs reject wide eth_getLogs ranges ("limit exceeded"),
+          // so scan backwards from the latest block in small windows and stop
+          // as soon as enough recent mints are found (or the deploy block is reached).
+          (async function () {
+            var list = $("activityList");
+            try {
+              var latest = await prov.getBlockNumber();
+              var found = [];
+              var scanFailed = false;
+              var CHUNK = 5000;
+              var to = latest;
+              while (to >= DEPLOY_BLOCK && found.length < 8) {
+                var from = Math.max(DEPLOY_BLOCK, to - CHUNK + 1);
+                var evs = null;
+                for (var attempt = 0; attempt < 2 && evs === null; attempt++) {
+                  try { evs = await contract.queryFilter(contract.filters.Minted(), from, to); }
+                  catch (e1) { if (attempt === 0) await new Promise(function (r) { setTimeout(r, 1300); }); }
+                }
+                if (evs === null) { scanFailed = true; break; } // RPC range/rate limit — render what we have
+                if (evs.length) found = evs.concat(found);
+                to = from - 1;
+                if (to >= DEPLOY_BLOCK && found.length < 8) await new Promise(function (r) { setTimeout(r, 500); });
+              }
+              if (!found.length) {
+                list.innerHTML = scanFailed
+                  ? '<div class="act-empty">Recent mint events could not be loaded from the public RPC right now — the totals above are read live from the contract, and full history is on <a href="https://bscscan.com/address/0x4f468aff03ce7de1b6512ab044f338f92689ce2e" target="_blank" rel="noopener">BscScan ↗</a>.</div>'
+                  : '<div class="act-empty">No mints recorded on-chain yet.</div>';
+                return;
+              }
+              var recent = found.slice(-8).reverse();
+              list.innerHTML = "";
+              recent.forEach(function (ev) {
+                var a = ev.args;
+                var minter = a.minter;
+                var short = minter.slice(0, 6) + "…" + minter.slice(-4);
+                var item = document.createElement("div");
+                item.className = "act-item";
+                var laneSpan = document.createElement("span");
+                laneSpan.className = "act-lane" + (a.agentLane ? "" : " pub");
+                laneSpan.textContent = a.agentLane ? "Agent" : "Public";
+                var who = document.createElement("span");
+                who.className = "mono";
+                who.textContent = short;
+                var what = document.createElement("span");
+                what.textContent = "minted " + fmt(Number(a.shares)) + " share" + (Number(a.shares) > 1 ? "s" : "") + " · " + fmtBnb(a.bnbPaid) + " BNB";
+                var link = document.createElement("a");
+                link.target = "_blank"; link.rel = "noopener";
+                link.href = BSCSCAN + "/tx/" + ev.transactionHash;
+                link.textContent = "View tx ↗";
+                item.appendChild(laneSpan); item.appendChild(who); item.appendChild(what); item.appendChild(link);
+                list.appendChild(item);
+              });
+              var note = document.createElement("div");
+              note.className = "act-empty";
+              note.textContent = "Showing the most recent mints found on-chain. Full history is on BscScan.";
+              list.appendChild(note);
+            } catch (e) {
+              list.innerHTML = '<div class="act-empty">Recent mint events could not be loaded from the public RPC right now — the totals above are read live from the contract, and full history is on <a href="https://bscscan.com/address/0x4f468aff03ce7de1b6512ab044f338f92689ce2e" target="_blank" rel="noopener">BscScan ↗</a>.</div>';
+            }
+          })();
+        }
+
+        // ---------- Live reads ----------
+        function refreshReads() {
+          if (typeof ethers === "undefined") {
+            stamp.textContent = "Chain library failed to load (network blocked?) — the contract address and verification links on this page still work; mint directly on the contract via BscScan (Write Contract → mintPublic / mintAgent).";
+            $("pillMinting").textContent = "Minting: check on BscScan";
+            $("statPrice").textContent = "0.000841 BNB (launch)";
+            return Promise.resolve();
+          }
+          var prov = readProv();
+          var c = new ethers.Contract(CONTRACT, ABI, prov);
+          var jobs = Promise.all([
+              c.pricePerShare(), c.sharesRemaining(), c.sharesMinted(), c.mintingOpen(), c.tradingOpen(),
+              c.agentSharesRemaining(), c.publicSharesRemaining()
+            ])
+            .then(function (r) {
+              livePriceWei = r[0];
+              liveRemaining = Number(r[1]);
+              var minted = Number(r[2]);
+              liveMintingOpen = r[3];
+              liveTradingOpen = r[4];
+              liveAgentRemaining = Number(r[5]);
+              livePublicRemaining = Number(r[6]);
+              $("statMinted").textContent = fmt(minted) + " / " + fmt(TOTAL_SHARES);
+              $("statRemaining").textContent = fmt(liveRemaining);
+              $("statPrice").textContent = fmtBnb(livePriceWei) + " BNB";
+              $("factPrice").textContent = fmtBnb(livePriceWei) + " BNB";
+              $("factRemaining").textContent = fmt(liveRemaining) + " / " + fmt(TOTAL_SHARES);
+              $("progBar").style.width = (minted / TOTAL_SHARES * 100) + "%";
+              $("agentStat").textContent = fmt(liveAgentRemaining) + " / " + fmt(AGENT_POOL) + " shares left";
+              $("pubStat").textContent = fmt(livePublicRemaining) + " / " + fmt(PUBLIC_POOL) + " shares left";
+              $("agentBar").style.width = ((AGENT_POOL - liveAgentRemaining) / AGENT_POOL * 100) + "%";
+              $("pubBar").style.width = ((PUBLIC_POOL - livePublicRemaining) / PUBLIC_POOL * 100) + "%";
+              $("laneAgent").disabled = liveAgentRemaining === 0;
+              $("lanePublic").disabled = livePublicRemaining === 0;
+              var agentMintedCount = AGENT_POOL - liveAgentRemaining;
+              var publicMintedCount = PUBLIC_POOL - livePublicRemaining;
+              $("tokAgentText").textContent = fmt(agentMintedCount) + " / " + fmt(AGENT_POOL) + " shares minted";
+              $("tokPublicText").textContent = fmt(publicMintedCount) + " / " + fmt(PUBLIC_POOL) + " shares minted";
+              $("tokAgentBar").style.width = (agentMintedCount / AGENT_POOL * 100) + "%";
+              $("tokPublicBar").style.width = (publicMintedCount / PUBLIC_POOL * 100) + "%";
+              $("actTotal").textContent = fmt(minted) + " shares";
+              $("actAgent").textContent = fmt(agentMintedCount) + " shares";
+              $("actPublic").textContent = fmt(publicMintedCount) + " shares";
+              var pm = $("pillMinting");
+              if (liveMintingOpen) { pm.textContent = "Minting: OPEN"; pm.className = "pill good"; }
+              else { pm.textContent = "Minting: CLOSED"; pm.className = "pill bad"; }
+              $("livebadgeText").textContent = liveMintingOpen ? "Minting open — live on BNB Smart Chain" : "Minting closed — live on BNB Smart Chain";
+              var pt = $("pillTrading");
+              if (liveTradingOpen) { pt.textContent = "Trading: OPEN"; pt.className = "pill good"; }
+              else { pt.textContent = "Trading: locked until pool opens"; pt.className = "pill warn"; }
+              loadActivity(prov, c);
+            })
+            .catch(function () {
+              $("statMinted").textContent = "unavailable";
+              $("statRemaining").textContent = "unavailable";
+              $("pillMinting").textContent = "Minting: unknown — check BscScan";
+            });
+          if (userAddress) {
+            var reg = new ethers.Contract(REGISTRY, REG_ABI, prov);
+            jobs = jobs.then(function () {
+              return Promise.all([c.mintedBy(userAddress), reg.balanceOf(userAddress)])
+                .then(function (r) {
+                  userMinted = Number(r[0]);
+                  userHasAgentId = r[1] > 0n;
+                  var pa = $("pillAgent");
+                  if (userHasAgentId) { pa.textContent = "Agent ID: detected ✓ — both lanes open to you"; pa.className = "pill good"; }
+                  else { pa.textContent = "Agent ID: not found — the public lane is still open to you"; pa.className = "pill warn"; }
+                  $("pillMine").textContent = "Your shares: " + fmt(userMinted) + " / " + MAX_PER_WALLET;
+                  $("pillMine").className = "pill" + (userMinted > 0 ? " good" : "");
+                })
+                .catch(function () {
+                  $("pillAgent").textContent = "Agent ID: check failed — try refresh";
+                });
+            });
+          }
+          return jobs.then(function () {
+            var now = new Date();
+            stamp.textContent = "On-chain data as of " + now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }) + " — read live from BSC when this page loaded. Price and availability are re-read again right before you mint.";
+            updateCost();
+          });
+        }
+
+        // Optional: current BNB/USD for the ≈ estimate. Fails silently to the launch reference.
+        function fetchBnbUsd() {
+          try {
+            fetch("https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT")
+              .then(function (r) { return r.ok ? r.json() : null; })
+              .then(function (j) {
+                if (j && j.price) { var p = parseFloat(j.price); if (p > 0) { bnbUsd = p; updateCost(); } }
+              })
+              .catch(function () {});
+          } catch (e) {}
+        }
+
+        // ---------- Wallet ----------
+        // "Open in wallet app" deep links must reopen THIS page (a wallet can
+        // only connect inside its own browser), so use this page's own URL —
+        // never a framed mirror copy hosted elsewhere.
+        var PUBLIC_URL = "https://automuseai.github.io/";
+        try {
+          if (window.location && /^https?:$/.test(window.location.protocol)) {
+            PUBLIC_URL = window.location.origin + window.location.pathname;
+          }
+        } catch (e) {}
+        $("openMetaMask").href = "https://metamask.app.link/dapp/" + PUBLIC_URL.replace(/^https?:\/\//, "");
+        $("openTrust").href = "https://link.trustwallet.com/open_url?coin_id=20000714&url=" + encodeURIComponent(PUBLIC_URL);
+        $("openCoinbase").href = "https://go.cb-w.com/dapp?cb_url=" + encodeURIComponent(PUBLIC_URL);
+        $("openMetaMask2").href = $("openMetaMask").href;
+        $("openTrust2").href = $("openTrust").href;
+        $("openCoinbase2").href = $("openCoinbase").href;
+
+        // Wallet discovery. Modern wallets announce themselves via EIP-6963;
+        // older ones only set window.ethereum (and fight over it when several
+        // extensions are installed). Collect both so the visitor can pick the
+        // wallet they actually want instead of silently getting the wrong one.
+        var eip6963Providers = [];
+        window.addEventListener("eip6963:announceProvider", function (ev) {
+          var d = ev && ev.detail;
+          if (!d || !d.provider || !d.info || !d.info.uuid) return;
+          for (var i = 0; i < eip6963Providers.length; i++) {
+            if (eip6963Providers[i].info.uuid === d.info.uuid) return;
+          }
+          eip6963Providers.push(d);
+        });
+        function requestEip6963() {
+          try { window.dispatchEvent(new Event("eip6963:requestProvider")); } catch (e) {}
+        }
+        requestEip6963();
+
+        function legacyName(p) {
+          if (!p) return "Browser wallet";
+          if (p.isCoinbaseWallet) return "Coinbase Wallet";
+          if (p.isTrust || p.isTrustWallet) return "Trust Wallet";
+          if (p.isBinance) return "Binance Wallet";
+          if (p.isMetaMask) return "MetaMask";
+          return "Browser wallet";
+        }
+        function candidateProviders() {
+          var out = [];
+          function push(name, provider) {
+            if (!provider || typeof provider.request !== "function") return;
+            for (var i = 0; i < out.length; i++) if (out[i].provider === provider) return;
+            out.push({ name: name, provider: provider });
+          }
+          eip6963Providers.forEach(function (d) { push(d.info.name || "Browser wallet", d.provider); });
+          var eth = window.ethereum;
+          if (eth) {
+            if (Array.isArray(eth.providers)) eth.providers.forEach(function (p) { push(legacyName(p), p); });
+            push(legacyName(eth), eth);
+          }
+          if (window.BinanceChain) push("Binance Wallet", window.BinanceChain);
+          // Trust Wallet also exposes its provider under its own namespace;
+          // in its in-app browser that is sometimes the only handle present.
+          if (window.trustwallet && window.trustwallet.ethereum) push("Trust Wallet", window.trustwallet.ethereum);
+          return out;
+        }
+        var listenedProviders = [];
+        function attachProviderListeners(eth) {
+          if (!eth || typeof eth.on !== "function") return;
+          if (listenedProviders.indexOf(eth) >= 0) return;
+          listenedProviders.push(eth);
+          // Handle wallet events in place — never reload the page here.
+          // Reloading on accountsChanged/chainChanged is what made wallet
+          // browsers spin in circles: connect -> event fires -> page reloads
+          // -> wallet prompt spins again, forever.
+          eth.on("accountsChanged", function (accs) {
+            if (!accs || !accs.length) {
+              signer = null; userAddress = null; userMinted = null; userHasAgentId = null;
+              setWalletUI();
+              wlabel.textContent = "Wallet disconnected";
+              return;
+            }
+            if (userAddress && accs[0].toLowerCase() === userAddress.toLowerCase()) return;
+            finishConnect(eth, false, accs[0]);
+          });
+          eth.on("chainChanged", function () {
+            // Re-wrap the provider for the new network without a reload and
+            // without prompting — the visitor can switch back via Connect.
+            if (userAddress) finishConnect(eth, false, userAddress);
+          });
+        }
+        function showPicker(cands) {
+          var list = $("walletPickList");
+          list.innerHTML = "";
+          cands.forEach(function (c) {
+            var b = document.createElement("button");
+            b.type = "button";
+            b.className = "btn ghost small";
+            b.textContent = c.name;
+            b.addEventListener("click", function () { connectWith(c.provider); });
+            list.appendChild(b);
+          });
+          $("noWallet").hidden = true;
+          $("walletHelp").hidden = true;
+          $("walletPick").hidden = false;
+        }
+
+        function setWalletUI() {
+          if (userAddress) {
+            wdot.className = "dot on";
+            wlabel.textContent = "Wallet connected";
+            waddr.textContent = userAddress;
+            connectBtn.textContent = "Connected";
+          } else {
+            wdot.className = "dot";
+            wlabel.textContent = "Wallet not connected";
+            waddr.textContent = "";
+            connectBtn.textContent = "Connect wallet";
+          }
+          updateMintBtn();
+        }
+        async function ensureBsc(eth) {
+          var chainId = await eth.request({ method: "eth_chainId" });
+          if (parseInt(chainId, 16) === BSC_CHAIN_ID) { netwarn.classList.remove("show"); return true; }
+          netwarn.classList.add("show");
+          try {
+            await eth.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0x38" }] });
+            netwarn.classList.remove("show");
+            return true;
+          } catch (e) {
+            if (e && e.code === 4902) {
+              try {
+                await eth.request({
+                  method: "wallet_addEthereumChain",
+                  params: [{
+                    chainId: "0x38", chainName: "BNB Smart Chain",
+                    nativeCurrency: { name: "BNB", symbol: "BNB", decimals: 18 },
+                    rpcUrls: ["https://bsc-dataseed.binance.org/"],
+                    blockExplorerUrls: ["https://bscscan.com"]
+                  }]
+                });
+                netwarn.classList.remove("show");
+                return true;
+              } catch (e2) { return false; }
+            }
+            return false;
+          }
+        }
+        function showWalletHelp() {
+          var h = $("walletHelp");
+          if (!h) return;
+          h.hidden = false;
+          h.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        }
+        // Shared tail of every successful connection: wrap the provider for
+        // signing, verify the network, refresh the per-wallet reads.
+        // promptSwitch=false is the silent path (page load / reload): never
+        // pop a network-switch prompt the visitor didn't ask for.
+        async function finishConnect(eth, promptSwitch, knownAddress) {
+          var provider = new ethers.BrowserProvider(eth);
+          signer = knownAddress ? await provider.getSigner(knownAddress) : await provider.getSigner();
+          userAddress = await signer.getAddress();
+          var net = await provider.getNetwork();
+          if (Number(net.chainId) !== BSC_CHAIN_ID && promptSwitch) {
+            // Ask for the account first, then switch networks: several
+            // wallets reject a chain switch from a site they are not
+            // connected to yet.
+            await ensureBsc(eth);
+            provider = new ethers.BrowserProvider(eth);
+            signer = await provider.getSigner(userAddress);
+            userAddress = await signer.getAddress();
+            net = await provider.getNetwork();
+          }
+          attachProviderListeners(eth);
+          setWalletUI();
+          if (Number(net.chainId) !== BSC_CHAIN_ID) {
+            netwarn.classList.add("show");
+            wlabel.textContent = "Connected, but not on BSC";
+          } else {
+            netwarn.classList.remove("show");
+          }
+          await refreshReads();
+        }
+        async function connectWith(eth) {
+          try {
+            connectBtn.disabled = true;
+            $("noWallet").hidden = true;
+            $("walletPick").hidden = true;
+            $("walletHelp").hidden = true;
+            wlabel.textContent = "Connecting — approve in your wallet…";
+            waddr.textContent = "";
+            // Silent path first: if this wallet already authorized this
+            // page, eth_accounts answers with no prompt at all.
+            var accounts = null;
+            try { accounts = await eth.request({ method: "eth_accounts" }); } catch (e0) { accounts = null; }
+            if (!accounts || !accounts.length) {
+              // The raw request on the provider itself — exactly the call
+              // wallet browsers expect, with no library in between.
+              accounts = await eth.request({ method: "eth_requestAccounts" });
+            }
+            if (!accounts || !accounts.length) throw new Error("The wallet returned no account — unlock the wallet and try again.");
+            await finishConnect(eth, true, accounts[0]);
+          } catch (e) {
+            wlabel.textContent = "Connection failed";
+            waddr.textContent = shortErr(e);
+            // A rejection, or a request already waiting in the wallet, is
+            // where visitors get stuck — show the recovery routes instead
+            // of a dead-end error line.
+            if (e && (e.code === 4001 || e.code === "ACTION_REJECTED" || e.code === -32002)) showWalletHelp();
+          } finally {
+            connectBtn.disabled = false;
+          }
+        }
+        // Silent reconnect: if the wallet already authorized this page
+        // (e.g. after the reload fired by an account or network change),
+        // reconnect without any prompt, so the visitor is not told to
+        // connect all over again.
+        function silentReconnect() {
+          if (typeof ethers === "undefined") return;
+          var tries = 0;
+          var iv = setInterval(async function () {
+            tries++;
+            if (userAddress || tries > 8) { clearInterval(iv); return; }
+            requestEip6963();
+            var cands = candidateProviders();
+            if (cands.length !== 1) return;
+            try {
+              var accs = await cands[0].provider.request({ method: "eth_accounts" });
+              if (accs && accs.length) {
+                clearInterval(iv);
+                await finishConnect(cands[0].provider, false, accs[0]);
+              }
+            } catch (e) {}
+          }, 500);
+        }
+        connectBtn.addEventListener("click", async function () {
+          if (userAddress) { refreshReads(); return; }
+          if (typeof ethers === "undefined") {
+            wlabel.textContent = "Chain library failed to load";
+            waddr.textContent = "Check your connection and reload, or mint directly on the contract via BscScan (Write Contract → mintPublic / mintAgent) with exactly shares × pricePerShare() BNB.";
+            return;
+          }
+          requestEip6963();
+          var cands = candidateProviders();
+          // Some wallet browsers inject their provider a moment after the
+          // page loads — poll briefly before concluding there is no wallet.
+          for (var waited = 0; !cands.length && waited < 2000; waited += 300) {
+            await new Promise(function (r) { setTimeout(r, 300); });
+            requestEip6963();
+            cands = candidateProviders();
+          }
+          if (!cands.length) {
+            wlabel.textContent = "No wallet found in this browser";
+            waddr.textContent = "";
+            $("walletPick").hidden = true;
+            $("noWallet").hidden = false;
+            $("noWallet").scrollIntoView({ block: "nearest", behavior: "smooth" });
+            return;
+          }
+          if (cands.length === 1) { connectWith(cands[0].provider); return; }
+          showPicker(cands);
+        });
+
+        // ---------- Mint ----------
+        mintBtn.addEventListener("click", async function () {
+          if (!signer || !userAddress) { setTx("Connect your wallet first.", "err"); return; }
+          var n = shareCount();
+          var lane = selectedLane;
+          var fnName = lane === "agent" ? "mintAgent" : "mintPublic";
+          try {
+            mintBtn.disabled = true;
+            setTx("Re-checking price, lane availability and your cap on-chain…");
+            var check = new ethers.Contract(CONTRACT, ABI, readProv());
+            var reg = new ethers.Contract(REGISTRY, REG_ABI, readProv());
+            var r = await Promise.all([
+              check.pricePerShare(), check.mintingOpen(),
+              check.mintedBy(userAddress), reg.balanceOf(userAddress),
+              lane === "agent" ? check.agentSharesRemaining() : check.publicSharesRemaining()
+            ]);
+            var price = r[0], open = r[1], mine = Number(r[2]), agentBal = r[3], laneLeft = Number(r[4]);
+            if (!open) { setTx("Minting is closed on-chain right now. Nothing was sent.", "err"); await refreshReads(); return; }
+            if (lane === "agent" && agentBal <= 0n) { setTx("This wallet holds no Binance Agent ID, so the agent lane would reject the mint. Switch to the public lane — it needs no Agent ID. Nothing was sent.", "err"); await refreshReads(); return; }
+            if (laneLeft < n) { setTx("Only " + laneLeft + " shares remain in the " + lane + " lane — lower the amount or try the other lane. Nothing was sent.", "err"); await refreshReads(); return; }
+            if (mine + n > MAX_PER_WALLET) { setTx("You already minted " + mine + " shares; the cap is " + MAX_PER_WALLET + " per wallet across both lanes. Nothing was sent.", "err"); await refreshReads(); return; }
+            var total = price * BigInt(n);
+            setTx("Confirm in your wallet: " + fnName + "(" + n + ") paying exactly " + fmtBnb(total) + " BNB (plus gas)…");
+            var contract = new ethers.Contract(CONTRACT, ABI, signer);
+            var tx = await contract[fnName](n, { value: total });
+            setTx("Sent — waiting for confirmation.",
+              null,
+              '<a target="_blank" rel="noopener" href="' + BSCSCAN + "/tx/" + tx.hash + '">View tx ' + tx.hash.slice(0, 10) + "… ↗</a>");
+            await tx.wait();
+            activityLoaded = false;
+            setTx("Minted ✓ " + fmt(n * TOKENS_PER_SHARE) + " AutoMuse (" + n + " share" + (n > 1 ? "s" : "") + " via the " + lane + " lane) is in your wallet.",
+              "ok",
+              '<a target="_blank" rel="noopener" href="' + BSCSCAN + "/tx/" + tx.hash + '">View tx ↗</a>');
+            await refreshReads();
+          } catch (e) {
+            setTx(shortErr(e), "err");
+            refreshReads();
+          } finally {
+            updateMintBtn();
+          }
+        });
+
+        // ---------- Copy helpers ----------
+        $("copyContract").addEventListener("click", function () { copyText(CONTRACT, this); });
+        $("refreshBtn").addEventListener("click", function () {
+          stamp.textContent = "Reading the contract…";
+          activityLoaded = false;
+          refreshReads();
+        });
+
+        // ---------- Closing-date countdown (30 November 2026, end of day WITA) ----------
+        var CLOSE_TS = new Date("2026-11-30T23:59:59+08:00").getTime();
+        function tickCountdown() {
+          var els = document.querySelectorAll(".cdleft");
+          if (!els.length) return;
+          var diff = CLOSE_TS - Date.now();
+          var txt;
+          if (diff <= 0) {
+            txt = "The announced minting period ended on 30 November 2026.";
+          } else {
+            var d = Math.floor(diff / 86400000);
+            var h = Math.floor((diff % 86400000) / 3600000);
+            var m = Math.floor((diff % 3600000) / 60000);
+            txt = "Time remaining: " + d + "d " + h + "h " + m + "m.";
+          }
+          for (var i = 0; i < els.length; i++) els[i].textContent = txt;
+        }
+        tickCountdown();
+        setInterval(tickCountdown, 30000);
+
+        setWalletUI();
+        updateCost();
+        refreshReads();
+        fetchBnbUsd();
+        silentReconnect();
+      })();
+    </script>
+  </body>
+</html>
